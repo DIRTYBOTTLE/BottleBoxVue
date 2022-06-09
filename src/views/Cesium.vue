@@ -2,17 +2,26 @@
   <div id="cesiumContainer"></div>
   <el-tree :data="tree" @check-change="handleCheckChange" show-checkbox default-expand-all
            style="position: absolute;top: 0;left: 0;"/>
+  <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
+  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 220px;">贴地距离</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 323px;">清除测量</el-button>
+  <el-button @click="flyTo" style="position: absolute;top: 50px;left: 125px;">黄家坝</el-button>
 </template>
 
 <script>
 import * as Cesium from "cesium/Cesium";
 import * as widgets from "cesium/Widgets/widgets.css";
 import {onMounted} from "vue";
+import {B_Measure} from "@/utils/Cesium/Measure";
+import {B_Camera} from "@/utils/Cesium/Camera";
 
 export default {
   name: "Cesium",
   setup() {
     let viewer;
+    let measure;
+    let camera;
+
     onMounted(() => {
       Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyNDg2NzE0Yy1jNTQzLTQ4NWMtODI0My03OTg5NWZiYWY2YjUiLCJpZCI6NzU0MjYsImlhdCI6MTYzODU5NzkyOH0.nMc5nLbF-KZFbOCPyZeiDSHiX5tCDv8brYBZIElPfKs';
       viewer = new Cesium.Viewer('cesiumContainer', {
@@ -310,8 +319,10 @@ export default {
         }
       })
       viewer.baseLayerPicker.viewModel.imageryProviderViewModels.unshift(tianImage, tianVector, tianTerrain)
-      viewer.baseLayerPicker.viewModel.selectedImagery = viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
-      // viewer.baseLayerPicker.viewModel.selectedTerrain = viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
+      // viewer.baseLayerPicker.viewModel.selectedImagery = viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
+      viewer.baseLayerPicker.viewModel.selectedTerrain = viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
+      measure = new B_Measure(viewer);
+      camera = new B_Camera(viewer);
     })
 
     const tree = [
@@ -371,9 +382,36 @@ export default {
       }
     }
 
+
+    const measureDistance = () => {
+      measure.measurePolyLine();
+    }
+
+    const measurePolyLineToGround = () => {
+      measure.measurePolyLineToGround();
+    }
+
+    const clearDistance = () => {
+      measure.clear();
+    }
+
+    const flyTo = () => {
+      camera.flyTo({
+        destination: new Cesium.Cartesian3(-1359527.881887964, 5251080.84182769, 3347486.3154035173),
+        orientation: {
+          heading: 0.6321958327174828,
+          pitch: -0.29359391259896683,
+        }
+      });
+    }
+
     return {
       tree,
-      handleCheckChange
+      handleCheckChange,
+      measureDistance,
+      measurePolyLineToGround,
+      clearDistance,
+      flyTo
     }
   },
 
@@ -384,6 +422,7 @@ export default {
 #cesiumContainer {
   height: 100vh;
 }
+
 .el-tree {
   background-color: grey;
   color: white;

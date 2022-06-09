@@ -37,12 +37,10 @@ export default {
     const getBlog = () => {
       axios.get('/api/blog/list.do', {
         params: {
-          userId: '1'
+          userId: JSON.parse(sessionStorage.getItem("user") || "{}").id,
         }
       }).then(res => {
-        // console.log(res.data.data)
         blogs.value = res.data.data;
-        // console.log(blogs.value)
       })
     }
     const deleteBlog = (id) => {
@@ -61,7 +59,6 @@ export default {
     }
     const goEdit = (id) => {
       router.push(`/blogedit?id=${id}`)
-      // alert("2333")
     }
     onMounted(() => {
       getBlog()

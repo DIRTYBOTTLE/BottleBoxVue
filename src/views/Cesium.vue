@@ -4,7 +4,9 @@
            style="position: absolute;top: 0;left: 0;"/>
   <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
   <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 220px;">贴地距离</el-button>
-  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 323px;">清除测量</el-button>
+  <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 323px;">贴地面积</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 423px;">清除测量</el-button>
+
   <el-button @click="flyTo" style="position: absolute;top: 50px;left: 125px;">黄家坝</el-button>
 </template>
 
@@ -372,7 +374,7 @@ export default {
           });
     }
 
-    const handleCheckChange = (data, checked, indeterminate) => {
+    const handleCheckChange = (data) => {
       if (data.show === true) {
         viewer.dataSources.remove(viewer.dataSources.getByName(data.name)[0], true)
         data.show = false
@@ -405,13 +407,18 @@ export default {
       });
     }
 
+    const measurePolygonToGround = () => {
+      measure.measurePolygonToGround()
+    }
+
     return {
       tree,
       handleCheckChange,
       measureDistance,
       measurePolyLineToGround,
       clearDistance,
-      flyTo
+      flyTo,
+      measurePolygonToGround
     }
   },
 

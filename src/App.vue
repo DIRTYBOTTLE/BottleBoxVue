@@ -1,8 +1,8 @@
 <template>
-<!--  nav定义导航链接的部分-->
-<!--  <nav>-->
-<!--    <router-link to="/login">登陆</router-link>-->
-<!--  </nav>-->
+  <!--  nav定义导航链接的部分-->
+  <!--  <nav>-->
+  <!--    <router-link to="/login">登陆</router-link>-->
+  <!--  </nav>-->
   <router-view/>
 </template>
 
@@ -20,5 +20,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.el-drawer {
+  background-color: rgba(255, 255, 255, 0.7) !important;
 }
 </style>

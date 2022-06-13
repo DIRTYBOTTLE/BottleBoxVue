@@ -4,12 +4,11 @@ import {point, polygon} from "@turf/helpers";
 import tin from "@turf/tin"
 import bbox from "@turf/bbox";
 import pointsWithinPolygon from "@turf/points-within-polygon";
+import {ElNotification} from 'element-plus'
 
 export class B_Measure {
     constructor(viewer) {
         this.viewer = viewer
-        // this.viewer.scene.globe.depthTestAgainstTerrain = true
-        // 测量实体集
         this.entityCollection = []
         this.measureDataSource = new Cesium.CustomDataSource('measureData');
         this.measureCollection = this.measureDataSource.entities;
@@ -123,8 +122,6 @@ export class B_Measure {
 
         // 注册鼠标左击事件
         handler.setInputAction((clickEvent) => {
-            // 需要设置this.viewer.scene.globe.depthTestAgainstTerrain = true
-            // let cartesian = this.viewer.scene.pickPosition(clickEvent.position);
             let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(clickEvent.position), this.viewer.scene);
             if (!cartesian) {
                 return false;
@@ -140,6 +137,12 @@ export class B_Measure {
                 this.addLineToGround([positions[0], positions[1]]);
 
                 Promise.resolve(this.distanceToGround(positions[0], positions[1])).then((result) => {
+                    ElNotification({
+                        title: '贴地距离',
+                        message: "计算完成",
+                        type: 'success',
+                        position: 'top-left',
+                    })
                     let centerPoint = result[3]
                     let length = result[0]
                     // 计算距离
@@ -224,10 +227,22 @@ export class B_Measure {
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
         handler.setInputAction(() => {
+            ElNotification({
+                title: '贴地面积',
+                message: "开始计算",
+                type: 'info',
+                position: 'top-left',
+            })
             this.measureCollection.remove(lineEntity);
             const draw = (cartesian3Positions) => {
                 let areaPromise = this.areaPolygonToGround(cartesian3Positions)
                 Promise.resolve(areaPromise).then((area) => {
+                    ElNotification({
+                        title: '贴地面积',
+                        message: "计算完成",
+                        type: 'success',
+                        position: 'top-left',
+                    })
                     this.drawPolygon(cartesian3Positions)
                     if (area > 1000000) {
                         area = (area / 1000000).toFixed(2) + "平方公里";
@@ -416,7 +431,6 @@ export class B_Measure {
         return (area)
     }
 
-
     /*
     * 笛卡尔坐标数组转换为WGS-84坐标系数组
     * @param cartesian3Arr 笛卡尔坐标数组
@@ -454,7 +468,7 @@ export class B_Measure {
     }
 
     /*
-    * 给多边形加上
+    * 计算空间三角形面积
     * */
     areaSpaceTriangle(a, b, c) {
         let x1 = b[0] - a[0]

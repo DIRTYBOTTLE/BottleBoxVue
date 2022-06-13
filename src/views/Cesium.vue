@@ -14,19 +14,19 @@
     </div>
     <div class="drawer-item-container">
       <div class="drawer-item" @click="measureDistance();drawer=false">
-        <img :src="require('../assets/直线距离栅格.png')">
+        <img :src="require('../assets/直线距离栅格.png')" alt="网络错误">
         <p>欧式距离</p>
       </div>
       <div class="drawer-item" @click="measurePolyLineToGround();drawer=false">
-        <img :src="require('../assets/耗费距离栅格.png')">
+        <img :src="require('../assets/耗费距离栅格.png')" alt="网络错误">
         <p>贴地距离</p>
       </div>
       <div class="drawer-item" @click="measurePolygonToGround();drawer=false">
-        <img :src="require('../assets/贴地面积.png')">
+        <img :src="require('../assets/贴地面积.png')" alt="网络错误">
         <p>贴地面积</p>
       </div>
       <div class="drawer-item" @click="clearDistance();drawer=false">
-        <img :src="require('../assets/清除.png')">
+        <img :src="require('../assets/清除.png')" alt="网络错误">
         <p>清除测量</p>
       </div>
     </div>
@@ -472,7 +472,6 @@ export default {
 .drawer-item-container {
   display: flex;
   flex-wrap: wrap;
-  /*margin-left: 20px;*/
 }
 
 .drawer-item {
@@ -490,6 +489,5 @@ export default {
 .drawer-item p {
   text-align: center;
 }
-
 
 </style>

@@ -121,7 +121,5 @@ export default {
 
 .card-header {
   position: relative;
-  /*justify-content: space-between;*/
-  /*align-items: center;*/
 }
 </style>

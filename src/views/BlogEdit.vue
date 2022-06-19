@@ -68,7 +68,7 @@ export default {
       content: '',
       fromTime: myDate.toLocaleDateString(),
       toTime: myDate.toLocaleDateString(),
-      userId: '1'
+      userId: JSON.parse(sessionStorage.getItem("user") || "{}").id
     })
 
     // 模拟 ajax 异步获取内容
@@ -86,23 +86,17 @@ export default {
           id: id
         }
       }).then(res => {
-        // console.log(res.data.data.content)
         blogForm.value.title = res.data.data.title
         blogForm.value.content = res.data.data.content
       })
     }
 
     const submit = () => {
-      // console.log(blogForm.value)
-      // console.log(valueHtml.value)
       if (blogForm.value.id == '0') {
         axios.post('/api/blog/insert.do', blogForm.value).then(res => {
           if (res.data.code == '0') {
             ElMessage.success("保存成功！")
             blogForm.value.id = res.data.data
-            // console.log(blogForm)
-            // getBlog(res.data.data)
-
           } else {
             ElMessage.error("保存失败！")
           }
@@ -116,7 +110,6 @@ export default {
           }
         })
       }
-
     }
 
     const goHome = () => {
@@ -136,14 +129,6 @@ export default {
     const handleCreated = (editor) => {
       editorRef.value = editor // 记录 editor 实例，重要！
     }
-
-    // const insertText = () => {
-    //   const editor = editorRef.value // 获取 editor ，必须等待它渲染完之后
-    //   if (editor == null) return
-    //
-    //   // editor.insertText('hello world') // 执行 editor API
-    //   // alert(editor.getHtml())
-    // }
 
 
     return {

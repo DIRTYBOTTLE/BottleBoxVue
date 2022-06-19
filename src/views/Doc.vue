@@ -6,7 +6,7 @@
   </el-button>
   <div class="body">
     <el-upload drag :action="action" multiple name="multipartFile"
-               :on-success="success" :show-file-list="false" style="width: 500px">
+               :on-success="success">
       <!--  <el-upload drag action="http://101.42.222.84:8080/ssm-2.0-SNAPSHOT/file/upload.do" multiple name="multipartFile">-->
       <el-icon class="el-icon--upload">
         <upload-filled/>
@@ -24,7 +24,7 @@
       <template #header>
         <div class="card-header">
           <span style="cursor: pointer">{{ doc.name }}</span>
-          <span style="position: absolute;right: 0px">
+          <span style="position: absolute;right: 0">
             <el-button :icon="Delete" circle @click="deleteFile(doc.uuid)"/>
             <el-button :icon="Download" circle @click="download(doc.uuid)"/>
           </span>
@@ -51,8 +51,7 @@ export default {
     const docs = ref([])
     const action = ref("/api/doc/upload.do")
     const success = (res) => {
-      // console.log(res)
-      if (res.code == '0') {
+      if (res.code === '0') {
         getDocs()
         ElMessage.success("上传成功！")
       } else {
@@ -83,7 +82,7 @@ export default {
           uuid: uuid
         }
       }).then(res => {
-        if (res.data.code == '0') {
+        if (res.data.code === '0') {
           getDocs()
           ElMessage.success("删除成功！")
         } else {
@@ -122,7 +121,5 @@ export default {
 
 .card-header {
   position: relative;
-  /*justify-content: space-between;*/
-  /*align-items: center;*/
 }
 </style>

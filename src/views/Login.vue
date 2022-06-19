@@ -40,18 +40,14 @@
               <span>忘记?</span>
               <button type="submit" @click='login'>登陆</button>
             </template>
-
             <br/><br/>
-
           </div>
-
-
         </div>
-
-
       </div>
-      <div id="lyric" v-html="lyric" style="width: 30%;position: absolute;right: 0;
-        bottom: 40px;display: flex;justify-content: center;text-align: center"></div>
+      <div v-loading="true" v-html="lyric" id="lyric"
+           style="width: 29%;position: absolute;right: 0;bottom: 40px;
+           display: flex;justify-content: center;text-align: center">
+      </div>
     </div>
 
   </div>
@@ -60,6 +56,7 @@
 
 <script>
 import axios from 'axios'
+import request from "@/utils/request";
 
 export default {
   name: "Music",
@@ -82,29 +79,30 @@ export default {
         this.$message({type: "error", message: "两次密码输入不一致！"});
         return;
       }
-      axios.post('/api/user/registerUser.do', this.registerForm);
+      request.post('/api/user/registerUser.do', this.registerForm);
+      this.go("login")
       this.$message({type: "success", message: "注册成功"});
     },
     login() {
-      axios.post('/api/user/loginUser.do', this.loginForm).then(res => {
-        // console.log(res.data.code)
+      request.post('/api/user/login.do', this.loginForm).then(res => {
         if (res.data.code === '0') {
           this.$message({
             type: "success",
-            message: "登陆成功"
+            message: "登陆成功！"
           })
+          sessionStorage.setItem("user", JSON.stringify(res.data.data));
           this.$router.push("/home")
         } else {
           this.$message({
             type: "error",
-            message: "登陆失败"
+            message: "用户名或密码错误！"
           })
         }
       })
     },
     randomMusic() {
-      axios.get('/api/song/randomSong.do').then(res => {
-        this.lyric=res.data.lyric;
+      axios.get('https://v1.hitokoto.cn/?c=c&c=d&c=e&c=f&c=g&c=h&c=i&c=j&c=k&c=l').then(res => {
+        this.lyric = res.data.hitokoto;
       })
     },
     go(type) {
@@ -130,7 +128,6 @@ export default {
   created() {
     this.randomMusic();
     this.bgNum = this.randomNum(0, this.bgUrl.length - 1);
-    // console.log(this.bgNum)
   },
 
 }

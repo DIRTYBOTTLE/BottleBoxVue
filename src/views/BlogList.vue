@@ -9,7 +9,7 @@
       <template #header>
         <div class="card-header">
           <span @click="goContent(blog.id)" style="cursor: pointer">{{ blog.title }}</span>
-          <span style="position: absolute;right: 0px">
+          <span style="position: absolute;right: 0">
             <el-button :icon="Edit" circle @click="goEdit(blog.id)"/>
             <el-button :icon="Delete" circle @click="deleteBlog(blog.id)"/>
           </span>
@@ -17,7 +17,7 @@
       </template>
       <div>创建：{{ blog.fromTime }} 更新：{{ blog.toTime }}</div>
     </el-card>
-    <el-button :icon="Edit" style="position: absolute; right: 0px;" @click="goEdit('0')"/>
+    <el-button :icon="Edit" style="position: absolute; right: 0;" @click="goEdit('0')"/>
   </div>
 </template>
 
@@ -37,12 +37,10 @@ export default {
     const getBlog = () => {
       axios.get('/api/blog/list.do', {
         params: {
-          userId: '1'
+          userId: JSON.parse(sessionStorage.getItem("user") || "{}").id,
         }
       }).then(res => {
-        // console.log(res.data.data)
         blogs.value = res.data.data;
-        // console.log(blogs.value)
       })
     }
     const deleteBlog = (id) => {
@@ -51,7 +49,7 @@ export default {
           id: id
         }
       }).then(res => {
-        if (res.data.code == '0') {
+        if (res.data.code === '0') {
           getBlog()
           ElMessage.success("删除成功！")
         } else {
@@ -61,7 +59,6 @@ export default {
     }
     const goEdit = (id) => {
       router.push(`/blogedit?id=${id}`)
-      // alert("2333")
     }
     onMounted(() => {
       getBlog()
@@ -107,17 +104,6 @@ export default {
 
 .card-header {
   position: relative;
-  /*justify-content: space-between;*/
-  /*align-items: center;*/
 }
-
-/*.text {*/
-/*  font-size: 14px;*/
-/*}*/
-
-/*.item {*/
-/*  margin-bottom: 18px;*/
-/*}*/
-
 
 </style>

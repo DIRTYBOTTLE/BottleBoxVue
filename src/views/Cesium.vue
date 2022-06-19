@@ -2,17 +2,53 @@
   <div id="cesiumContainer"></div>
   <el-tree :data="tree" @check-change="handleCheckChange" show-checkbox default-expand-all
            style="position: absolute;top: 0;left: 0;"/>
+  <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
+  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 220px;">贴地距离</el-button>
+  <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 323px;">贴地面积</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 423px;">清除测量</el-button>
+  <el-button @click="drawer=true" style="position: absolute;top: 10px;left: 523px;">分析工具</el-button>
+  <el-button @click="flyTo" style="position: absolute;top: 50px;left: 125px;">黄家坝</el-button>
+  <el-drawer v-model="drawer" :with-header="false">
+    <div class="drawer-title">
+      空间量算
+    </div>
+    <div class="drawer-item-container">
+      <div class="drawer-item" @click="measureDistance();drawer=false">
+        <img :src="require('../assets/直线距离栅格.png')" alt="网络错误">
+        <p>欧式距离</p>
+      </div>
+      <div class="drawer-item" @click="measurePolyLineToGround();drawer=false">
+        <img :src="require('../assets/耗费距离栅格.png')" alt="网络错误">
+        <p>贴地距离</p>
+      </div>
+      <div class="drawer-item" @click="measurePolygonToGround();drawer=false">
+        <img :src="require('../assets/贴地面积.png')" alt="网络错误">
+        <p>贴地面积</p>
+      </div>
+      <div class="drawer-item" @click="clearDistance();drawer=false">
+        <img :src="require('../assets/清除.png')" alt="网络错误">
+        <p>清除测量</p>
+      </div>
+    </div>
+  </el-drawer>
 </template>
 
 <script>
 import * as Cesium from "cesium/Cesium";
 import * as widgets from "cesium/Widgets/widgets.css";
 import {onMounted} from "vue";
+import {B_Measure} from "@/utils/Cesium/Measure";
+import {B_Camera} from "@/utils/Cesium/Camera";
+import {ref} from "vue";
 
 export default {
   name: "Cesium",
   setup() {
     let viewer;
+    let measure;
+    let camera;
+    const drawer = ref(false)
+
     onMounted(() => {
       Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyNDg2NzE0Yy1jNTQzLTQ4NWMtODI0My03OTg5NWZiYWY2YjUiLCJpZCI6NzU0MjYsImlhdCI6MTYzODU5NzkyOH0.nMc5nLbF-KZFbOCPyZeiDSHiX5tCDv8brYBZIElPfKs';
       viewer = new Cesium.Viewer('cesiumContainer', {
@@ -310,8 +346,10 @@ export default {
         }
       })
       viewer.baseLayerPicker.viewModel.imageryProviderViewModels.unshift(tianImage, tianVector, tianTerrain)
-      viewer.baseLayerPicker.viewModel.selectedImagery = viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
-      // viewer.baseLayerPicker.viewModel.selectedTerrain = viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
+      // viewer.baseLayerPicker.viewModel.selectedImagery = viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
+      viewer.baseLayerPicker.viewModel.selectedTerrain = viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
+      measure = new B_Measure(viewer);
+      camera = new B_Camera(viewer);
     })
 
     const tree = [
@@ -361,7 +399,7 @@ export default {
           });
     }
 
-    const handleCheckChange = (data, checked, indeterminate) => {
+    const handleCheckChange = (data) => {
       if (data.show === true) {
         viewer.dataSources.remove(viewer.dataSources.getByName(data.name)[0], true)
         data.show = false
@@ -371,9 +409,41 @@ export default {
       }
     }
 
+    const measureDistance = () => {
+      measure.measurePolyLine();
+    }
+
+    const measurePolyLineToGround = () => {
+      measure.measurePolyLineToGround();
+    }
+
+    const clearDistance = () => {
+      measure.clear();
+    }
+
+    const flyTo = () => {
+      camera.flyTo({
+        destination: new Cesium.Cartesian3(-1359527.881887964, 5251080.84182769, 3347486.3154035173),
+        orientation: {
+          heading: 0.6321958327174828,
+          pitch: -0.29359391259896683,
+        }
+      });
+    }
+
+    const measurePolygonToGround = () => {
+      measure.measurePolygonToGround()
+    }
+
     return {
       tree,
-      handleCheckChange
+      handleCheckChange,
+      measureDistance,
+      measurePolyLineToGround,
+      clearDistance,
+      flyTo,
+      measurePolygonToGround,
+      drawer
     }
   },
 
@@ -384,8 +454,40 @@ export default {
 #cesiumContainer {
   height: 100vh;
 }
+
 .el-tree {
   background-color: grey;
   color: white;
 }
+
+.drawer-title {
+  line-height: 150%;
+  font-size: xx-large;
+  font-weight: bold;
+  background-image: linear-gradient(45deg, deeppink, gold);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.drawer-item-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.drawer-item {
+  margin: 5px 15px;
+}
+
+.drawer-item:hover {
+  cursor: pointer;
+}
+
+.drawer-item img {
+  width: 100px;
+}
+
+.drawer-item p {
+  text-align: center;
+}
+
 </style>

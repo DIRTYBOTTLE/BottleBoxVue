@@ -36,11 +36,7 @@ export default {
     const id = route.query.id;
     const title = ref("");
     const content = ref("");
-    axios.get('/api/blog/select.do', {
-      params: {
-        id: id
-      }
-    })
+    axios.get('/api/blog/select.do', {params: {id: id}})
         .then(res => {
           content.value = res.data.data.content
           title.value = res.data.data.title
@@ -51,13 +47,6 @@ export default {
 
     // 内容 HTML
     const valueHtml = ref('')
-
-    // 模拟 ajax 异步获取内容
-    // onMounted(() => {
-    //   setTimeout(() => {
-    //     valueHtml.value = '<p>模拟 Ajax 异步设置内容</p>'
-    //   }, 1500)
-    // })
 
     const editorConfig = {}
 
@@ -80,7 +69,6 @@ export default {
 
     const goEdit = () => {
       router.push('/blogedit?id=' + id)
-      // alert("2333")
     }
 
     return {

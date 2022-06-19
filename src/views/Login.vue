@@ -45,7 +45,7 @@
         </div>
       </div>
       <div v-loading="true" v-html="lyric" id="lyric"
-           style="width: 30%;position: absolute;right: 0;bottom: 40px;
+           style="width: 29%;position: absolute;right: 0;bottom: 40px;
            display: flex;justify-content: center;text-align: center">
       </div>
     </div>
@@ -101,8 +101,8 @@ export default {
       })
     },
     randomMusic() {
-      axios.get('/api/song/randomSong.do').then(res => {
-        this.lyric = res.data.lyric;
+      axios.get('https://v1.hitokoto.cn/?c=c&c=d&c=e&c=f&c=g&c=h&c=i&c=j&c=k&c=l').then(res => {
+        this.lyric = res.data.hitokoto;
       })
     },
     go(type) {
@@ -128,7 +128,6 @@ export default {
   created() {
     this.randomMusic();
     this.bgNum = this.randomNum(0, this.bgUrl.length - 1);
-    // console.log(this.bgNum)
   },
 
 }

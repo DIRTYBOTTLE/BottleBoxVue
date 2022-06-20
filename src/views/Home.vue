@@ -14,6 +14,19 @@
         <a v-if="githubUrl" class="icon-item" :href="githubUrl"><img
             :src="require('../assets/home/IconGithub.png')"></a>
       </div>
+      <div class="card-container" id="shici-card">
+        {{ shici.content }}<br/>
+        《{{ shici.title }}》<br/>
+        {{ shici.author }}
+
+      </div>
+      <div class="card-container" id="count-card">
+        <span id="busuanzi_container_site_uv">您是本站第<span id="busuanzi_value_site_uv"><i
+            class="fa fa-spinner fa-spin"></i></span>个小伙伴</span><br/>
+        <span id="busuanzi_container_site_pv">本站被折腾了<span id="busuanzi_value_site_pv"><i
+            class="fa fa-spinner fa-spin"></i></span>次</span>
+
+      </div>
     </div>
     <!--  内容区  -->
     <div id="mid-side">
@@ -49,7 +62,6 @@ import axios from "axios";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {Edit, Delete} from "@element-plus/icons-vue";
 import {useRouter} from "vue-router";
-
 
 export default {
   name: "Home",
@@ -131,12 +143,22 @@ export default {
       )
     }
 
+    const shici = ref({})
+
     onMounted(() => {
           getBlog()
           ap = new APlayer({
             container: document.getElementById('music-card'),
           });
           getMusic('tencent', 'playlist', '1503048898')
+          const jinrishici = require('jinrishici');
+          jinrishici.load(result => {
+            shici.value.content = result.data.content
+            shici.value.title = result.data.origin.title
+            shici.value.author = result.data.origin.author
+          });
+          const script = require("busuanzi.pure.js");
+          script.fetch()
         }
     )
 
@@ -155,7 +177,8 @@ export default {
       goEdit,
       deleteBlog,
       Edit,
-      Delete
+      Delete,
+      shici
     }
   }
 }
@@ -200,6 +223,14 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+#shici-card {
+  text-align: center;
+}
+
+#count-card {
+  text-align: center;
 }
 
 .icon-item {

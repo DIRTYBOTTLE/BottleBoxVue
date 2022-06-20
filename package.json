@@ -19,9 +19,11 @@
     "@wangeditor/editor-for-vue": "^5.1.11",
     "aplayer": "^1.10.1",
     "axios": "^0.26.1",
+    "busuanzi.pure.js": "^1.0.3",
     "cesium": "^1.92.0",
     "core-js": "^3.8.3",
     "element-plus": "^2.1.7",
+    "jinrishici": "^1.0.6",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"

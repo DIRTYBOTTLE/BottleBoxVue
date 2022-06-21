@@ -158,7 +158,7 @@ export default {
             shici.value.author = result.data.origin.author
           });
           const script = require("busuanzi.pure.js");
-          script.fetch()
+          // script.fetch()
         }
     )
 

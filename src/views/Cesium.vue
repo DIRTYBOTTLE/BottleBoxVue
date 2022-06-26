@@ -396,7 +396,7 @@ export default {
                 maximumLevel: 18
               })
               const layer2 = new Cesium.WebMapTileServiceImageryProvider({
-                url: 'http://t0.tianditu.gov.cn/cia_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
+                url: 'https://t0.tianditu.gov.cn/cia_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
                 layer: 'cia',
                 style: 'default',
                 tileMatrixSetID: 'w',
@@ -421,7 +421,7 @@ export default {
             maximumLevel: 18
           })
           const layer2 = new Cesium.WebMapTileServiceImageryProvider({
-            url: 'http://t0.tianditu.gov.cn/cva_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
+            url: 'https://t0.tianditu.gov.cn/cva_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
             layer: 'cva',
             style: 'default',
             tileMatrixSetID: 'w',
@@ -446,7 +446,7 @@ export default {
             maximumLevel: 18
           })
           const layer2 = new Cesium.WebMapTileServiceImageryProvider({
-            url: 'http://t0.tianditu.gov.cn/cta_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
+            url: 'https://t0.tianditu.gov.cn/cta_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
             layer: 'cta',
             style: 'default',
             tileMatrixSetID: 'w',

@@ -17,16 +17,16 @@
       </template>
     </el-input>
   </span>
-
-  <div style="border: 1px solid #ccc;height: calc( 100vh - 32px) ">
+  <div style="border: 1px solid #ccc;height: calc( 100vh - 32px);
+  display: flex;flex-direction: column;align-items: center;background-color: whitesmoke">
     <Toolbar
-        style="border-bottom: 1px solid #ccc"
+        style="border-bottom: 1px solid #ccc;width: 100vw"
         :editor="editorRef"
         :defaultConfig="toolbarConfig"
         :mode="mode"
     />
     <Editor
-        style="height: calc(100vh - 105px); overflow-y: hidden;"
+        style="height: 100vh; overflow-y: hidden; width: 65vw;"
         v-model="blogForm.content"
         :defaultConfig="editorConfig"
         :mode="mode"

@@ -1,23 +1,24 @@
 <template>
-  <h1 align="center">{{ title }}</h1>
-  <!--  <div v-html="content" style="margin: 10px;line-height: 200%"></div>-->
-  <el-button @click="goHome" style="position: absolute;top: 0;left: 0">
-    <el-icon>
-      <HomeFilled/>
-    </el-icon>
-  </el-button>
-  <el-button @click="goEdit" style="position: absolute;top: 0;right: 0">
-    <el-icon>
-      <Edit/>
-    </el-icon>
-  </el-button>
-  <Editor
-      style="height: calc( 100vh - 45.5px); overflow-y: hidden;"
-      v-model="content"
-      :defaultConfig="editorConfig"
-      :mode="mode"
-      @onCreated="handleCreated"
-  />
+  <div style="display: flex;flex-direction: column;align-items: center;background-color: whitesmoke">
+    <h1 align="center">{{ title }}</h1>
+    <el-button @click="goHome" style="position: absolute;top: 0;left: 0">
+      <el-icon>
+        <HomeFilled/>
+      </el-icon>
+    </el-button>
+    <el-button @click="goEdit" style="position: absolute;top: 0;right: 0">
+      <el-icon>
+        <Edit/>
+      </el-icon>
+    </el-button>
+    <Editor
+        style="height: calc(100vh - 46px); overflow-y: hidden; width: 65vw;"
+        v-model="content"
+        :defaultConfig="editorConfig"
+        :mode="mode"
+        @onCreated="handleCreated"
+    />
+  </div>
 </template>
 
 <script>

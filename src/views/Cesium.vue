@@ -1,36 +1,58 @@
 <template>
   <div id="cesiumContainer"></div>
-  <el-tree :data="tree" @check-change="handleCheckChange" show-checkbox default-expand-all
-           style="position: absolute;top: 0;left: 0;"/>
+  <el-tree :data="layer" @check-change="handleCheckChange" show-checkbox default-expand-all
+           style="position: absolute;top: 90px;left: 0;"/>
   <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
   <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 220px;">贴地距离</el-button>
   <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 323px;">贴地面积</el-button>
-  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 423px;">清除测量</el-button>
-  <el-button @click="drawer=true" style="position: absolute;top: 10px;left: 523px;">分析工具</el-button>
+  <el-button @click="measureProfile" style="position: absolute;top: 10px;left: 423px;">剖面测量</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 523px;">清除测量</el-button>
+  <el-button @click="drawPolygon" style="position: absolute;top: 10px;left: 623px;">绘制面</el-button>
+  <el-button @click="drawer=true" style="position: absolute;top: 10px;left: 723px;">分析工具</el-button>
+  <el-button @click="drawerLayer=true" style="position: absolute;top: 10px;left: 823px;">要素图层</el-button>
+
+  <el-autocomplete v-model.trim="poiForm.keyWord" placeholder="地图检索" clearable input-style="width:220px"
+                   :fetch-suggestions="suggestQuery" @select="handleSelect" :trigger-on-focus="false"
+                   value-key="name" :highlight-first-item="true"
+                   style="position: absolute;top: 10px;left: 935px;">
+    <template #default="{ item }">
+      <div><b>{{ item.name }}</b></div>
+      <div>{{ item.address }}</div>
+      <div>{{ item.phone }}</div>
+    </template>
+  </el-autocomplete>
+
   <el-button @click="flyTo" style="position: absolute;top: 50px;left: 125px;">黄家坝</el-button>
-  <el-drawer v-model="drawer" :with-header="false">
-    <div class="drawer-title">
-      空间量算
-    </div>
-    <div class="drawer-item-container">
-      <div class="drawer-item" @click="measureDistance();drawer=false">
-        <img :src="require('../assets/直线距离栅格.png')" alt="网络错误">
-        <p>欧式距离</p>
-      </div>
-      <div class="drawer-item" @click="measurePolyLineToGround();drawer=false">
-        <img :src="require('../assets/耗费距离栅格.png')" alt="网络错误">
-        <p>贴地距离</p>
-      </div>
-      <div class="drawer-item" @click="measurePolygonToGround();drawer=false">
-        <img :src="require('../assets/贴地面积.png')" alt="网络错误">
-        <p>贴地面积</p>
-      </div>
-      <div class="drawer-item" @click="clearDistance();drawer=false">
-        <img :src="require('../assets/清除.png')" alt="网络错误">
-        <p>清除测量</p>
-      </div>
-    </div>
-  </el-drawer>
+  <!--  <el-drawer v-model="drawer" :with-header="false">-->
+  <!--    <div class="drawer-title">-->
+  <!--      空间量算-->
+  <!--    </div>-->
+  <!--    <div class="drawer-item-container">-->
+  <!--      <div class="drawer-item" @click="measureDistance();drawer=false">-->
+  <!--        <img :src="require('../assets/直线距离栅格.png')" alt="网络错误">-->
+  <!--        <p>欧式距离</p>-->
+  <!--      </div>-->
+  <!--      <div class="drawer-item" @click="measurePolyLineToGround();drawer=false">-->
+  <!--        <img :src="require('../assets/耗费距离栅格.png')" alt="网络错误">-->
+  <!--        <p>贴地距离</p>-->
+  <!--      </div>-->
+  <!--      <div class="drawer-item" @click="measurePolygonToGround();drawer=false">-->
+  <!--        <img :src="require('../assets/贴地面积.png')" alt="网络错误">-->
+  <!--        <p>贴地面积</p>-->
+  <!--      </div>-->
+  <!--      <div class="drawer-item" @click="clearDistance();drawer=false">-->
+  <!--        <img :src="require('../assets/清除.png')" alt="网络错误">-->
+  <!--        <p>清除测量</p>-->
+  <!--      </div>-->
+  <!--    </div>-->
+  <!--  </el-drawer>-->
+  <!--  <el-drawer v-model="drawerProfile" :with-header="false" direction="btt" style="height: 50%">-->
+  <!--    <div id="echartsContainer" style="width:100vw;height: 50vh"></div>-->
+  <!--  </el-drawer>-->
+  <!--  <el-drawer v-model="drawerLayer" :with-header="false">-->
+  <!--    <el-tree :data="layer" @check-change="handleCheckChange" show-checkbox default-expand-all-->
+  <!--             style="position: absolute;top: 0;left: 0;"/>-->
+  <!--  </el-drawer>-->
 </template>
 
 <script>
@@ -39,15 +61,104 @@ import * as widgets from "cesium/Widgets/widgets.css";
 import {onMounted} from "vue";
 import {B_Measure} from "@/utils/Cesium/Measure";
 import {B_Camera} from "@/utils/Cesium/Camera";
-import {ref} from "vue";
+import {B_DataSource} from "@/utils/Cesium/DataSource";
+import {ref, nextTick} from "vue";
+import * as echarts from 'echarts';
+import {Search} from "@element-plus/icons-vue";
 
 export default {
   name: "Cesium",
+  components: {Search},
   setup() {
     let viewer;
     let measure;
     let camera;
+    let dataSource;
     const drawer = ref(false)
+    const drawerProfile = ref(false)
+    const drawerLayer = ref(false)
+    const layer = [
+      {
+        label: '北川',
+        children: [
+          {
+            label: '地下水源',
+            category: 'water',
+            name: 'underground',
+            icon: require('../assets/地下水滴.png'),
+            show: false
+          },
+          {
+            label: '地表水源',
+            category: 'water',
+            name: 'surface',
+            icon: require('../assets/地表水滴.png'),
+            show: false
+          },
+        ],
+      },
+      {
+        label: '天地图数据',
+        children: [
+          {
+            label: '铁路',
+            url: "https://gisserver.tianditu.gov.cn/TDTService/wfs",
+            name: 'LRRL',
+            count: "1000",
+            icon: require('../assets/地下水滴.png'),
+            show: false
+          },
+          {
+            label: '公路',
+            url: "https://gisserver.tianditu.gov.cn/TDTService/wfs",
+            name: 'LRDL',
+            count: "1000",
+            icon: require('../assets/地下水滴.png'),
+            show: false
+          },
+          {
+            label: '水系面',
+            url: "https://gisserver.tianditu.gov.cn/TDTService/wfs",
+            name: 'HYDA',
+            count: "1000",
+            icon: require('../assets/地下水滴.png'),
+            show: false
+          },
+          {
+            label: '水系线',
+            url: "https://gisserver.tianditu.gov.cn/TDTService/wfs",
+            name: 'HYDL',
+            count: "1000",
+            icon: require('../assets/地下水滴.png'),
+            show: false
+          },
+          {
+            label: '居民地及设施面',
+            url: "https://gisserver.tianditu.gov.cn/TDTService/wfs",
+            category: 'TDTService',
+            name: 'RESA',
+            bbox: "31,104,32,105",
+            show: false
+          },
+          {
+            label: '居民地及设施点',
+            url: "https://gisserver.tianditu.gov.cn/TDTService/wfs",
+            category: 'TDTService',
+            name: 'RESP',
+            count: "1000",
+            icon: require('../assets/地下水滴.png'),
+            show: false
+          },
+          {
+            label: '美国人口',
+            url: "/geoserver/topp/ows",
+            category: "topp",
+            name: "states",
+            show: false
+          }
+        ]
+      }
+    ]
 
     onMounted(() => {
       Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyNDg2NzE0Yy1jNTQzLTQ4NWMtODI0My03OTg5NWZiYWY2YjUiLCJpZCI6NzU0MjYsImlhdCI6MTYzODU5NzkyOH0.nMc5nLbF-KZFbOCPyZeiDSHiX5tCDv8brYBZIElPfKs';
@@ -153,10 +264,10 @@ export default {
         // imageryProvider
 
         // 地形设置，默认为new EllipsoidTerrainProvider()
-        // terrainProvider: Cesium.createWorldTerrain({
-        //   requestWaterMask: true,
-        //   requestVertexNormals: true,
-        // }),
+        terrainProvider: Cesium.createWorldTerrain({
+          requestWaterMask: true,
+          requestVertexNormals: true,
+        }),
 
         // 星空背景
         // skyBox : false,
@@ -346,65 +457,19 @@ export default {
         }
       })
       viewer.baseLayerPicker.viewModel.imageryProviderViewModels.unshift(tianImage, tianVector, tianTerrain)
-      // viewer.baseLayerPicker.viewModel.selectedImagery = viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
+      viewer.baseLayerPicker.viewModel.selectedImagery = viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
       viewer.baseLayerPicker.viewModel.selectedTerrain = viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
       measure = new B_Measure(viewer);
       camera = new B_Camera(viewer);
+      dataSource = new B_DataSource(viewer);
     })
-
-    const tree = [
-      {
-        label: '北川',
-        children: [
-          {
-            label: '地下水源',
-            category: 'water',
-            name: 'underground',
-            icon: require('../assets/地下水滴.png'),
-            show: false
-          },
-          {
-            label: '地表水源',
-            category: 'water',
-            name: 'surface',
-            icon: require('../assets/地表水滴.png'),
-            show: false
-          },
-        ],
-      },
-    ]
-
-    const loadGeoJSON = (category, name, icon) => {
-      Cesium.GeoJsonDataSource.load(
-          "/geoserver/water/ows?service=WFS&version=1.0.0&request=GetFeature" +
-          "&typeName=" + category + "%3A" + name +
-          "&outputFormat=application%2Fjson")
-          .then(function (dataSource) {
-            dataSource.name = name
-            viewer.dataSources.add(dataSource);
-            const entities = dataSource.entities.values;
-            for (let i = 0; i < entities.length; i++) {
-              const entity = entities[i];
-              entity.billboard = new Cesium.BillboardGraphics({
-                image: icon,
-                width: 30,
-                height: 30,
-                heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-                verticalOrigin: Cesium.VerticalOrigin.BOTTOM
-              })
-            }
-          })
-          .catch(function (error) {
-            window.alert(error);
-          });
-    }
 
     const handleCheckChange = (data) => {
       if (data.show === true) {
         viewer.dataSources.remove(viewer.dataSources.getByName(data.name)[0], true)
         data.show = false
       } else if (data.show === false) {
-        loadGeoJSON(data.category, data.name, data.icon)
+        dataSource.loadGeoJSON(data)
         data.show = true
       }
     }
@@ -435,15 +500,120 @@ export default {
       measure.measurePolygonToGround()
     }
 
+    const measureProfile = () => {
+      const drawProfile = (profile) => {
+        drawerProfile.value = true
+        nextTick(() => {
+          const chartDom = document.getElementById('echartsContainer');
+          const myChart = echarts.init(chartDom);
+          let option;
+
+          option = {
+            title: {
+              text: '剖面图'
+            },
+            // grid: {
+            //   left: '6%',
+            //   right: '6%',
+            //   bottom: '6%',
+            //   // containLabel: true,
+            // },
+            toolbox: {
+              feature: {
+                saveAsImage: {}
+              },
+            },
+            xAxis: {
+              name: '距离',
+              type: 'category',
+              boundaryGap: false,
+              data: profile.distances,
+              axisPointer: {
+                show: 'true',
+                // type: 'cross',
+                snap: 'true',
+                label: {
+                  precision: '3'
+                },
+              },
+              // axisPointer: {
+              //   label: {
+              //     show: true,
+              //     precision:2
+              //   },
+              // },
+            },
+            yAxis: {
+              name: '海拔',
+              type: 'value',
+              min: 'dataMin',
+              axisTick: {
+                show: 'false'
+              },
+              axisLabel: {
+                show: 'false'
+              },
+              axisPointer: {
+                show: 'true',
+                snap: 'true',
+                type: 'shadow',
+                label: {
+                  // show: 'true',
+                  precision: '2'
+                },
+              },
+            },
+            series: [
+              {
+                data: profile.heights,
+                type: 'line',
+                smooth: true,
+                areaStyle: {}
+              }
+            ]
+          };
+
+          option && myChart.setOption(option);
+        })
+
+      }
+      measure.measureProfile(drawProfile)
+    }
+
+    const drawPolygon = () => {
+      measure.drawPolygon()
+    }
+
+    const poiForm = ref({})
+    const suggestQuery = (queryString, cb) => {
+      B_Measure.poiSearch(poiForm.value).then((res) => {
+        cb(res)
+      })
+    }
+    const handleSelect = (item) => {
+      const lon = parseFloat(item.lonlat.split(",")[0])
+      const lat = parseFloat(item.lonlat.split(",")[1])
+      camera.flyToFromDegree(lon, lat)
+    }
+
     return {
-      tree,
+      layer,
       handleCheckChange,
       measureDistance,
       measurePolyLineToGround,
       clearDistance,
       flyTo,
       measurePolygonToGround,
-      drawer
+      measureProfile,
+      drawPolygon,
+      poiForm,
+      drawer,
+      drawerProfile,
+      drawerLayer,
+      Search,
+      suggestQuery,
+      handleSelect,
+
     }
   },
 
@@ -489,5 +659,18 @@ export default {
 .drawer-item p {
   text-align: center;
 }
+
+/*#el-drawer.btt.open {*/
+/*  height: 50%;*/
+/*  background-color: red;*/
+/*}*/
+/*.el-drawer.btt, .el-drawer.ttb {*/
+/*  background-color: red;*/
+/*}*/
+
+/*.el-drawer__body {*/
+/*  !*height: 50%;*!*/
+/*  !*background-color: red;*!*/
+/*}*/
 
 </style>

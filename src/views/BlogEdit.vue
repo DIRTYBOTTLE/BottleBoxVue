@@ -1,6 +1,6 @@
 <template>
   <span>
-    <el-input v-model="blogForm.title" placeholder="请键入标题" clearable input-style="text-align: center">
+    <el-input v-model="blogForm.title" placeholder="请键入标题" clearable input-style="text-align: center;">
       <template #prepend>
         <el-button @click="goHome">
           <el-icon>

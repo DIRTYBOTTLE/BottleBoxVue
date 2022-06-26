@@ -5,6 +5,7 @@ import tin from "@turf/tin"
 import bbox from "@turf/bbox";
 import pointsWithinPolygon from "@turf/points-within-polygon";
 import {ElNotification} from 'element-plus'
+import axios from "axios";
 
 export class B_Measure {
     constructor(viewer) {
@@ -134,14 +135,11 @@ export class B_Measure {
             // 存储第二个点
             if (positions.length === 2) {
                 this.drawPoint(cartesian);
-                this.addLineToGround([positions[0], positions[1]]);
+                this.drawLineToGround([positions[0], positions[1]]);
 
                 Promise.resolve(this.distanceToGround(positions[0], positions[1])).then((result) => {
                     ElNotification({
-                        title: '贴地距离',
-                        message: "计算完成",
-                        type: 'success',
-                        position: 'top-left',
+                        title: '贴地距离', message: "计算完成", type: 'success', position: 'top-left',
                     })
                     let centerPoint = result[3]
                     let length = result[0]
@@ -174,7 +172,7 @@ export class B_Measure {
             if (positions.length === 1) {
                 positions.push(movePosition);
                 // 绘制线
-                lineEntity = this.addLineToGround(positions);
+                lineEntity = this.drawLineToGround(positions);
             }
             if (positions.length === 2) {
                 positions.pop();
@@ -195,13 +193,16 @@ export class B_Measure {
     };
 
     /*
-    * 测量贴地多边形面积
+    * 测量贴地多边形面积<br/>
+    * 左键添加点，右键结束
     * */
     measurePolygonToGround() {
+        const body = document.querySelector("body")
+        body.style.cursor = "crosshair"
         let positions = [];
         let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
         let linePosition = []
-        let lineEntity = this.addLineToGround(linePosition);
+        let lineEntity = this.drawLineToGround(linePosition);
         handler.setInputAction((clickEvent) => {
             // 需要设置this.viewer.scene.globe.depthTestAgainstTerrain = true
             // let cartesian = this.viewer.scene.pickPosition(clickEvent.position);
@@ -212,7 +213,7 @@ export class B_Measure {
             positions.push(cartesian)
             this.drawPoint(cartesian);
             if (positions.length > 1) {
-                this.addLineToGround(positions.slice(positions.length - 2, positions.length))
+                this.drawLineToGround(positions.slice(positions.length - 2, positions.length))
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         handler.setInputAction((moveEvent) => {
@@ -227,23 +228,18 @@ export class B_Measure {
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
         handler.setInputAction(() => {
+            body.style.cursor = "default"
             ElNotification({
-                title: '贴地面积',
-                message: "开始计算",
-                type: 'info',
-                position: 'top-left',
+                title: '贴地面积', message: "开始计算", type: 'info', position: 'top-left',
             })
             this.measureCollection.remove(lineEntity);
             const draw = (cartesian3Positions) => {
                 let areaPromise = this.areaPolygonToGround(cartesian3Positions)
                 Promise.resolve(areaPromise).then((area) => {
                     ElNotification({
-                        title: '贴地面积',
-                        message: "计算完成",
-                        type: 'success',
-                        position: 'top-left',
+                        title: '贴地面积', message: "计算完成", type: 'success', position: 'top-left',
                     })
-                    this.drawPolygon(cartesian3Positions)
+                    this._drawPolygon(cartesian3Positions)
                     if (area > 1000000) {
                         area = (area / 1000000).toFixed(2) + "平方公里";
                     } else {
@@ -254,14 +250,163 @@ export class B_Measure {
                 })
             }
             draw(positions)
-            this.addLineToGround([positions[positions.length - 1], positions[0]])
+            this.drawLineToGround([positions[positions.length - 1], positions[0]])
             handler.destroy()
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
 
-    drawPoint(position) {
+    /*
+    * 测量剖面<br/>
+    * 进入测量模式，左键添加点，右键结束。<br/>
+    * 只能测量2点间的剖面。
+    * */
+    measureProfile(callback) {
+        const body = document.querySelector("body")
+        body.style.cursor = "crosshair"
+        const positionCartesian3Arr = []
+        const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        // 左键添加第一个点并画出，若已存在则返回
+        handler.setInputAction((event) => {
+            if (positionCartesian3Arr[0]) {
+                ElNotification({
+                    title: '操作不当', message: "右键指定剖面终点", type: 'warning', position: 'top-left',
+                })
+                return
+            }
+            positionCartesian3Arr[0] = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.position), this.viewer.scene);
+            this.drawPoint(positionCartesian3Arr[0])
+            this.drawLineToGround(positionCartesian3Arr)
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        // 若添加了第一个点，画出辅助线
+        handler.setInputAction((event) => {
+            if (positionCartesian3Arr[0]) {
+                positionCartesian3Arr[1] = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.endPosition), this.viewer.scene);
+            }
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+        // 右键
+        handler.setInputAction((event) => {
+            handler.destroy()
+            body.style.cursor = "default"
+            positionCartesian3Arr[1] = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.position), this.viewer.scene);
+            this.drawPoint(positionCartesian3Arr[1])
+            // 计算内插点数
+            let distance = Cesium.Cartesian3.distance(positionCartesian3Arr[0], positionCartesian3Arr[1]);
+            let interpolationNum = Math.floor(distance / 10);
+            // 得到各点笛卡尔及经纬度坐标
+            const positionCartographicArr = [];
+            positionCartographicArr.push(Cesium.Cartographic.fromCartesian(positionCartesian3Arr[0]));
+            const newPositionCartesian3Arr = []
+            newPositionCartesian3Arr.push(positionCartesian3Arr[0])
+            for (let i = 1; i < interpolationNum; i++) {
+                let lerp = Cesium.Cartesian3.lerp(positionCartesian3Arr[0], positionCartesian3Arr[1], i / interpolationNum, new Cesium.Cartesian3());
+                positionCartographicArr.push(Cesium.Cartographic.fromCartesian(lerp));
+                newPositionCartesian3Arr.push(lerp)
+            }
+            positionCartographicArr.push(Cesium.Cartographic.fromCartesian(positionCartesian3Arr[1]));
+            newPositionCartesian3Arr.push(positionCartesian3Arr[1])
+            // 得到每点的高程
+            const terrainProvider = Cesium.createWorldTerrain();
+            let promise = Cesium.sampleTerrain(terrainProvider, 12, positionCartographicArr);
+            Promise.resolve(promise).then((positionCartographicArr) => {
+                const distances = []
+                const heights = []
+                for (let i = 0; i < newPositionCartesian3Arr.length; i++) {
+                    distances.push(Cesium.Cartesian3.distance(newPositionCartesian3Arr[0], newPositionCartesian3Arr[i]).toFixed(2))
+                    heights.push(positionCartographicArr[i].height)
+                }
+                callback({
+                    distances: distances,
+                    heights: heights
+                })
+            })
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
+    }
+
+    static poiSearch(poiForm) {
+        poiForm.keyWord = (poiForm.keyWord || "")
+        poiForm.mapBound = (poiForm.mapBound || "0,0,180,90")
+        poiForm.level = (poiForm.level || 18)
+        // poiForm.specify = (poiForm.specify || "")
+        poiForm.queryType = (poiForm.queryType || 1)
+        poiForm.start = (poiForm.start || 0)
+        poiForm.count = (poiForm.count || 100)
+        // poiForm.dataTypes = (poiForm.dataTypes || "")
+        // poiForm.show = (poiForm.show || "")
+        // console.log(JSON.stringify(poiForm))
+        return axios.get("https://api.tianditu.gov.cn/v2/search?postStr="
+            + JSON.stringify(poiForm) + "&type=query&tk=" + tiandituTK).then((res) => {
+                if (res.data.resultType === 1) {
+                    return res.data.pois
+                }
+        })
+    }
+
+    drawPolygon() {
+        const body = document.querySelector("body")
+        body.style.cursor = "crosshair"
+        let positions = [];
+        let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        let linePosition = []
+        let lineEntity = this.drawLineToGround(linePosition);
+        handler.setInputAction((clickEvent) => {
+            // 需要设置this.viewer.scene.globe.depthTestAgainstTerrain = true
+            // let cartesian = this.viewer.scene.pickPosition(clickEvent.position);
+            let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(clickEvent.position), this.viewer.scene);
+            if (!cartesian) {
+                return false;
+            }
+            positions.push(cartesian)
+            this.drawPoint(cartesian);
+            if (positions.length > 1) {
+                this.drawLineToGround(positions.slice(positions.length - 2, positions.length))
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        handler.setInputAction((moveEvent) => {
+            // let movePosition = this.viewer.scene.pickPosition(moveEvent.endPosition); // 鼠标移动的点
+            if (positions.length > 0) {
+                let movePosition = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(moveEvent.endPosition), this.viewer.scene);
+                if (!movePosition) {
+                    return false;
+                }
+                linePosition[0] = positions[positions.length - 1];
+                linePosition[1] = movePosition;
+            }
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+        handler.setInputAction(() => {
+            body.style.cursor = "default"
+            ElNotification({
+                title: '贴地面积', message: "开始计算", type: 'info', position: 'top-left',
+            })
+            this.measureCollection.remove(lineEntity);
+            // const draw = (cartesian3Positions) => {
+            //     let areaPromise = this.areaPolygonToGround(cartesian3Positions)
+            //     Promise.resolve(areaPromise).then((area) => {
+            //         ElNotification({
+            //             title: '贴地面积', message: "计算完成", type: 'success', position: 'top-left',
+            //         })
+            //         this._drawPolygon(cartesian3Positions)
+            //         if (area > 1000000) {
+            //             area = (area / 1000000).toFixed(2) + "平方公里";
+            //         } else {
+            //             area = area.toFixed(2) + "平方米";
+            //         }
+            //         let areaText = "面积：" + area;
+            //         this.addLabel(cartesian3Positions[0], areaText);
+            //     })
+            // }
+            // draw(positions)
+            this.drawLineToGround([positions[positions.length - 1], positions[0]])
+            this._drawPolygon(positions)
+            handler.destroy()
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
+    }
+
+    /*
+    * @param cartesian3 Cartesian3
+    * */
+    drawPoint(cartesian3) {
         this.entityCollection.push(this.measureCollection.add(new Cesium.Entity({
-            position: position, point: {
+            position: cartesian3, point: {
                 color: Cesium.Color.fromCssColorString('#D75624'),
                 pixelSize: 8,
                 heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
@@ -285,9 +430,12 @@ export class B_Measure {
         return lineEntity;
     };
 
-    addLineToGround(positions) {
+    /*
+    * @param cartesian3Arr Cartesian3数组
+    * */
+    drawLineToGround(cartesian3Arr) {
         let dynamicPositions = new Cesium.CallbackProperty(() => {
-            return positions;
+            return cartesian3Arr;
         }, false);
         let lineEntity = this.measureCollection.add(new Cesium.Entity({
             name: '线', polyline: {
@@ -302,7 +450,7 @@ export class B_Measure {
         return lineEntity;
     };
 
-    drawPolygon(positions) {
+    _drawPolygon(positions) {
         let dynamicPositions = new Cesium.CallbackProperty(() => {
             return new Cesium.PolygonHierarchy(positions);
         }, false);
@@ -340,9 +488,7 @@ export class B_Measure {
 
 
     /*
-    * 贴线距离<br/>
-    * 1.计算两点直线距离，每米一个内插点<br/>
-    * 2.
+    * 贴线距离
     * @param left 起点 right 终点
     * */
     async distanceToGround(left, right) {
@@ -377,8 +523,6 @@ export class B_Measure {
             }
             return [surfaceDistance, left, right, Cesium.Cartesian3.fromRadians(updatedPositions[Math.floor(updatedPositions.length / 2)].longitude, updatedPositions[Math.floor(updatedPositions.length / 2)].latitude, updatedPositions[Math.floor(updatedPositions.length / 2)].height)];
         });
-
-
     }
 
     /*

@@ -104,13 +104,17 @@ export default {
   box-sizing: border-box;
 }
 
-.el-drawer {
-  background-color: rgba(255, 255, 255, 0.7) !important;
-}
+/*.el-drawer {*/
+/*  !*background-color: rgba(255, 255, 255, 0.7) !important;*!*/
+/*}*/
 
-.el-drawer__body {
-  padding: 0 !important;
-}
+/*.el-drawer__body {*/
+/*  padding: 0 !important;*/
+/*}*/
+
+/*.el-drawer.btt {*/
+/*  height: 50vh !important;*/
+/*}*/
 
 </style>
 

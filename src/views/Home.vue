@@ -1,4 +1,5 @@
 <template>
+  <!--  头部栏  -->
   <nav id="top-img" style="background-image:url(https://api.isoyu.com/bing_images.php)"></nav>
   <div id="main-container">
     <!--  左侧栏  -->
@@ -51,6 +52,10 @@
       </div>
 
     </div>
+  </div>
+  <!--  底部栏  -->
+  <div style="text-align: center">
+    <a href="https://beian.miit.gov.cn">黔ICP备2022005199号-1</a>
   </div>
 </template>
 
@@ -245,5 +250,14 @@ export default {
 
 >>> .el-table tr:hover {
   cursor: pointer;
+}
+
+a:hover{
+  color:gray;
+}
+a{
+  text-decoration:none;
+  color:gray;
+  /*font-weight:bold;*/
 }
 </style>

@@ -8,4 +8,10 @@ export class B_Camera {
     flyTo(option) {
         this.viewer.camera.flyTo(option)
     }
+
+    flyToFromDegree(lon, lat) {
+        this.viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(lon, lat, 500),
+        });
+    }
 }

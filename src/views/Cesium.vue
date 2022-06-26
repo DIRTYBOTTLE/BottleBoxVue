@@ -388,7 +388,7 @@ export default {
             category: '国内地图',
             creationFunction: function () {
               const layer1 = new Cesium.WebMapTileServiceImageryProvider({
-                url: 'http://t0.tianditu.gov.cn/img_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
+                url: 'https://t0.tianditu.gov.cn/img_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
                 layer: 'img',
                 style: 'default',
                 tileMatrixSetID: 'w',
@@ -413,7 +413,7 @@ export default {
         category: '国内地图',
         creationFunction: function () {
           const layer1 = new Cesium.WebMapTileServiceImageryProvider({
-            url: "http://t0.tianditu.gov.cn/vec_w/wmts?tk=057532f01c1b949cb43202d3aa352993",
+            url: "https://t0.tianditu.gov.cn/vec_w/wmts?tk=057532f01c1b949cb43202d3aa352993",
             layer: 'vec',
             style: 'default',
             tileMatrixSetID: 'w',
@@ -438,7 +438,7 @@ export default {
         category: '国内地图',
         creationFunction: function () {
           const layer1 = new Cesium.WebMapTileServiceImageryProvider({
-            url: 'http://t0.tianditu.gov.cn/ter_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
+            url: 'https://t0.tianditu.gov.cn/ter_w/wmts?tk=057532f01c1b949cb43202d3aa352993',
             layer: 'ter',
             style: 'default',
             tileMatrixSetID: 'w',

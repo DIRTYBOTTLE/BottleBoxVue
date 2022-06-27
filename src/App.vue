@@ -112,9 +112,9 @@ export default {
 /*  padding: 0 !important;*/
 /*}*/
 
-/*.el-drawer.btt {*/
-/*  height: 50vh !important;*/
-/*}*/
+.el-drawer.btt {
+  height: 50vh !important;
+}
 
 </style>
 

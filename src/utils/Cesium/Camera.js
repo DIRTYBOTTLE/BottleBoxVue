@@ -9,9 +9,10 @@ export class B_Camera {
         this.viewer.camera.flyTo(option)
     }
 
-    flyToFromDegree(lon, lat) {
+    flyToFromDegree(lon, lat, height) {
+        height = (height || 500)
         this.viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(lon, lat, 500),
+            destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
         });
     }
 }

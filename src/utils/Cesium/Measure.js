@@ -6,6 +6,7 @@ import bbox from "@turf/bbox";
 import pointsWithinPolygon from "@turf/points-within-polygon";
 import {ElNotification} from 'element-plus'
 import axios from "axios";
+import {B_Paint} from "@/utils/Cesium/Paint";
 
 export class B_Measure {
     constructor(viewer) {
@@ -21,13 +22,48 @@ export class B_Measure {
         body.style.cursor = "default"
         this.measureCollection.removeAll();
         this.entityCollection = [];
-        this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
-        this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-        this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+        // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+        // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
         if (callback) {
             callback()
         }
     };
+
+    measureMovingPointTool(callback) {
+        let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        handler.setInputAction((event) => {
+            if (event) {
+                let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.endPosition), this.viewer.scene);
+                if (!cartesian) {
+                    return
+                }
+                callback(Cesium.Cartographic.fromCartesian(cartesian))
+            }
+
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+    }
+
+    measurePointTool() {
+        ElNotification({
+            title: '操作提示', message: "左键开始，右键结束", type: 'info', position: 'top-left',
+        })
+        this._changeCursor(true)
+        let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        handler.setInputAction((clickEvent) => {
+            let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(clickEvent.position), this.viewer.scene);
+            if (!cartesian) {
+                return false;
+            }
+            this.measureCollection.add(B_Paint.paintPoint(cartesian,require('../../assets/cesium/点.png')))
+            console.log(B_Paint.paintPoint(cartesian,require('../../assets/cesium/点.png')))
+
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        handler.setInputAction(() => {
+            this._changeCursor(false)
+            handler.destroy()
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
+    }
 
     measurePolyLine(callback) {
         const body = document.querySelector("body")
@@ -335,9 +371,9 @@ export class B_Measure {
         // console.log(JSON.stringify(poiForm))
         return axios.get("https://api.tianditu.gov.cn/v2/search?postStr="
             + JSON.stringify(poiForm) + "&type=query&tk=" + tiandituTK).then((res) => {
-                if (res.data.resultType === 1) {
-                    return res.data.pois
-                }
+            if (res.data.resultType === 1) {
+                return res.data.pois
+            }
         })
     }
 
@@ -625,4 +661,12 @@ export class B_Measure {
         return 1 / 2 * Math.sqrt(ABxAC[0] * ABxAC[0] + ABxAC[1] * ABxAC[1] + ABxAC[2] * ABxAC[2])
     }
 
+    _changeCursor(changeBool) {
+        const body = document.querySelector("body")
+        if (changeBool) {
+            body.style.cursor = "crosshair"
+        } else {
+            body.style.cursor = "default"
+        }
+    }
 }

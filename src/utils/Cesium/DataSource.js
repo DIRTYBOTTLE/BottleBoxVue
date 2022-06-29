@@ -24,6 +24,7 @@ export class B_DataSource {
                 const entities = dataSource.entities.values
                 for (let i = 0; i < entities.length; i++) {
                     const entity = entities[i];
+
                     if (entity.billboard) {
                         entity.billboard = new Cesium.BillboardGraphics({
                             image: icon,
@@ -67,6 +68,7 @@ export class B_DataSource {
 
                         // console.log(entity.polygon.heightReference)
                     }
+                    // console.log(entity)
                 }
                 // console.log(entities)
                 // console.log(Cesium.HeightReference.CLAMP_TO_GROUND)

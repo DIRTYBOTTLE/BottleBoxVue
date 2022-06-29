@@ -12,9 +12,9 @@ export class B_Paint {
     clear() {
         this._changeCursor(false)
         this.paintEntities.removeAll();
-        this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
-        this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-        this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+        // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+        // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
     }
 
     paintPointTool() {
@@ -146,14 +146,42 @@ export class B_Paint {
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
 
-    static paintPoint(cartesian3) {
+    static paintPoint(cartesian3, imgUrl) {
+        const cartographic = Cesium.Cartographic.fromCartesian(cartesian3)
+        if (!imgUrl) {
+            return new Cesium.Entity({
+                name: '点',
+                position: cartesian3,
+                point: {
+                    color: Cesium.Color.fromCssColorString('#D75624'),
+                    pixelSize: 8,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                },
+                description: `${'<table class="cesium-infoBox-defaultTable"><tbody>' +
+                    "<tr><th>经度</th><td>"}${cartographic.longitude / Math.PI * 180}</td></tr>` +
+                    `<tr><th>纬度</th><td>${cartographic.latitude / Math.PI * 180}</td></tr>` +
+                    `<tr><th>高程</th><td>${cartographic.height}</td></tr>` +
+                    `</tbody></table>`,
+
+            })
+        }
         return new Cesium.Entity({
-            position: cartesian3, point: {
-                color: Cesium.Color.fromCssColorString('#D75624'),
-                pixelSize: 8,
+            name: '点',
+            position: cartesian3,
+            billboard: {
+                image: imgUrl,
+                width: 30,
+                height: 30,
                 heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-            }
+                verticalOrigin: Cesium.VerticalOrigin.BOTTOM
+            },
+            description: `${'<table class="cesium-infoBox-defaultTable"><tbody>' +
+                "<tr><th>经度</th><td>"}${cartographic.longitude / Math.PI * 180}</td></tr>` +
+                `<tr><th>纬度</th><td>${cartographic.latitude / Math.PI * 180}</td></tr>` +
+                `<tr><th>高程</th><td>${cartographic.height}</td></tr>` +
+                `</tbody></table>`,
         })
+
     }
 
     static paintPolyline(cartesian3Arr) {

@@ -1,13 +1,16 @@
 <template>
   <div id="cesiumContainer"></div>
+  <div style="position: absolute;bottom: 0;left: 0;color: white">经度 {{ screenPoint.lon }} 纬度 {{ screenPoint.lat }} 高程
+    {{ screenPoint.height }}
+  </div>
   <el-tree :data="layer" @check-change="handleCheckChange" show-checkbox default-expand-all
            style="position: absolute;top: 90px;left: 0;"/>
   <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
   <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 220px;">贴地距离</el-button>
   <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 323px;">贴地面积</el-button>
   <el-button @click="measureProfile" style="position: absolute;top: 10px;left: 423px;">剖面测量</el-button>
-  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 523px;">清除测量</el-button>
-<!--  <el-button @click="drawPolygon" style="position: absolute;top: 10px;left: 623px;">绘制面</el-button>-->
+  <el-button @click="measurePoint" style="position: absolute;top: 10px;left: 523px;">点位测量</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 623px;">清除测量</el-button>
   <el-button @click="drawer=true" style="position: absolute;top: 10px;left: 723px;">分析工具</el-button>
   <el-button @click="drawerLayer=true" style="position: absolute;top: 10px;left: 823px;">要素图层</el-button>
   <el-button @click="drawPoint" style="position: absolute;top: 50px;left: 120px;">绘制点</el-button>
@@ -58,6 +61,13 @@
     <el-tree :data="layer" @check-change="handleCheckChange" show-checkbox default-expand-all
              style="position: absolute;top: 0;left: 0;"/>
   </el-drawer>
+  <el-image
+      style="width: 100px; height: 100px;position: absolute;top: 50px;right: 5px"
+      :src="url"
+      :preview-src-list="srcList"
+      :initial-index="0"
+      fit="cover"
+  />
 </template>
 
 <script>
@@ -161,6 +171,7 @@ export default {
 
     onMounted(() => {
       b_Cesium = new B_Cesium('cesiumContainer')
+      b_Cesium.measure.measureMovingPointTool(measureScreenPoint)
     })
 
     const handleCheckChange = (data) => {
@@ -293,8 +304,6 @@ export default {
       b_Cesium.paint.clear()
     }
 
-
-
     const poiForm = ref({})
     const suggestQuery = (queryString, cb) => {
       B_Measure.poiSearch(poiForm.value).then((res) => {
@@ -306,6 +315,23 @@ export default {
       const lat = parseFloat(item.lonlat.split(",")[1])
       b_Cesium.camera.flyToFromDegree(lon, lat)
     }
+
+    const measurePoint = () => {
+      b_Cesium.measure.measurePointTool()
+    }
+    const screenPoint = ref({})
+    const measureScreenPoint = (cartesian) => {
+      screenPoint.value.lon = (cartesian.longitude / Math.PI * 180).toFixed(2)
+      screenPoint.value.lat = (cartesian.latitude / Math.PI * 180).toFixed(2)
+      screenPoint.value.height = (cartesian.height).toFixed(0)
+    }
+
+
+    const url = require("../assets/无人机1.jpg")
+    const srcList = [
+      require("../assets/无人机1.jpg"),
+      require("../assets/无人机2.jpg")
+    ]
 
     return {
       layer,
@@ -327,7 +353,11 @@ export default {
       drawPoint,
       drawPolyline,
       drawPolylineGround,
-      clearDraw
+      clearDraw,
+      url,
+      srcList,
+      screenPoint,
+      measurePoint
     }
   },
 

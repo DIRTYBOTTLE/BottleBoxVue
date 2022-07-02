@@ -1,6 +1,6 @@
 <template>
   <!--  头部栏  -->
-  <nav id="top-img" style="background-image:url(https://api.isoyu.com/bing_images.php)"></nav>
+  <nav id="top-img" style="background-image:url(https://api.ixiaowai.cn/gqapi/gqapi.php)"></nav>
   <div id="main-container">
     <!--  左侧栏  -->
     <div id="left-side">

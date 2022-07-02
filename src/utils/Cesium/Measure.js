@@ -55,9 +55,7 @@ export class B_Measure {
             if (!cartesian) {
                 return false;
             }
-            this.measureCollection.add(B_Paint.paintPoint(cartesian,require('../../assets/cesium/点.png')))
-            console.log(B_Paint.paintPoint(cartesian,require('../../assets/cesium/点.png')))
-
+            this.measureCollection.add(B_Paint.paintPoint(cartesian, require('../../assets/cesium/点.png')))
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         handler.setInputAction(() => {
             this._changeCursor(false)

@@ -7,14 +7,23 @@ export class B_Paint {
         this.paintDataSource = new Cesium.CustomDataSource('paint');
         this.paintEntities = this.paintDataSource.entities
         this.viewer.dataSources.add(this.paintDataSource);
+        this.handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
     }
 
     clear() {
         this._changeCursor(false)
-        this.paintEntities.removeAll();
+        this.paintEntities.removeAll()
+        this.clearHandler()
+        // this.handler.destroy()
         // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
         // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
         // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+    }
+
+    clearHandler() {
+        this.handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        this.handler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK)
+        this.handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE)
     }
 
     paintPointTool() {
@@ -22,17 +31,17 @@ export class B_Paint {
             title: '操作提示', message: "左键开始，右键结束", type: 'info', position: 'top-left',
         })
         this._changeCursor(true)
-        let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
-        handler.setInputAction((clickEvent) => {
+        // let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        this.handler.setInputAction((clickEvent) => {
             let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(clickEvent.position), this.viewer.scene);
             if (!cartesian) {
                 return false;
             }
             this.paintEntities.add(B_Paint.paintPoint(cartesian))
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-        handler.setInputAction(() => {
+        this.handler.setInputAction(() => {
             this._changeCursor(false)
-            handler.destroy()
+            this.clearHandler()
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
 
@@ -44,15 +53,15 @@ export class B_Paint {
         this._changeCursor(true)
         const cartesian3Arr = []
         this.paintEntities.add(B_Paint.paintPolyline(cartesian3Arr))
-        const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
-        handler.setInputAction((event) => {
+        // const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        this.handler.setInputAction((event) => {
             cartesian3Arr.pop()
             cartesian3Arr.push(this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.position), this.viewer.scene))
             this.paintEntities.add(B_Paint.paintPoint(cartesian3Arr.slice(cartesian3Arr.length - 1, cartesian3Arr.length)[0]))
             mouseMove = false
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
         // 若添加了第一个点，画出辅助线
-        handler.setInputAction((event) => {
+        this.handler.setInputAction((event) => {
 
             if (cartesian3Arr[0]) {
                 if (!mouseMove) {
@@ -65,10 +74,10 @@ export class B_Paint {
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
         // 右键
-        handler.setInputAction(() => {
+        this.handler.setInputAction(() => {
             this._changeCursor(false)
             cartesian3Arr.pop()
-            handler.destroy()
+            this.clearHandler()
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
 
@@ -80,15 +89,15 @@ export class B_Paint {
         this._changeCursor(true)
         const cartesian3Arr = []
         this.paintEntities.add(B_Paint.paintPolylineGround(cartesian3Arr))
-        const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
-        handler.setInputAction((event) => {
+        // const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        this.handler.setInputAction((event) => {
             cartesian3Arr.pop()
             cartesian3Arr.push(this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.position), this.viewer.scene))
             this.paintEntities.add(B_Paint.paintPoint(cartesian3Arr.slice(cartesian3Arr.length - 1, cartesian3Arr.length)[0]))
             mouseMove = false
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
         // 若添加了第一个点，画出辅助线
-        handler.setInputAction((event) => {
+        this.handler.setInputAction((event) => {
 
             if (cartesian3Arr[0]) {
                 if (!mouseMove) {
@@ -101,10 +110,10 @@ export class B_Paint {
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
         // 右键
-        handler.setInputAction(() => {
+        this.handler.setInputAction(() => {
             this._changeCursor(false)
             cartesian3Arr.pop()
-            handler.destroy()
+            this.clearHandler()
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
 
@@ -116,15 +125,15 @@ export class B_Paint {
         this._changeCursor(true)
         const cartesian3Arr = []
         this.paintEntities.add(B_Paint.paintPolylineGround(cartesian3Arr))
-        const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
-        handler.setInputAction((event) => {
+        // const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        this.handler.setInputAction((event) => {
             cartesian3Arr.pop()
             cartesian3Arr.push(this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.position), this.viewer.scene))
             this.paintEntities.add(B_Paint.paintPoint(cartesian3Arr.slice(cartesian3Arr.length - 1, cartesian3Arr.length)[0]))
             mouseMove = false
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
         // 若添加了第一个点，画出辅助线
-        handler.setInputAction((event) => {
+        this.handler.setInputAction((event) => {
 
             if (cartesian3Arr[0]) {
                 if (!mouseMove) {
@@ -137,8 +146,8 @@ export class B_Paint {
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
         // 右键
-        handler.setInputAction(() => {
-            handler.destroy()
+        this.handler.setInputAction(() => {
+            this.clearHandler()
             this._changeCursor(false)
             cartesian3Arr.pop()
             this.paintEntities.add(B_Paint.paintPolygon(cartesian3Arr))

@@ -71,6 +71,12 @@ import {useRouter} from "vue-router";
 export default {
   name: "Home",
   setup() {
+    function Person() {}
+    Person.prototype.name = "Paul"
+    const person1 = new Person()
+    // person1.__proto__.name = "Amy"
+    Object.getPrototypeOf(person1).name = "Amy"
+    console.log(person1)
     const router = useRouter();
     const avatarUrl = "https://avatars.githubusercontent.com/u/62377297?s=400&u=c09e0c16c7bc4fe961fb1738d5e42ad0a7cb4783&v=4"
     const username = JSON.parse(sessionStorage.getItem("user") || "{}").name

@@ -111,10 +111,10 @@ export class B_Cesium {
             // imageryProvider
 
             // 地形设置，默认为new EllipsoidTerrainProvider()
-            terrainProvider: Cesium.createWorldTerrain({
-                requestWaterMask: true,
-                requestVertexNormals: true,
-            }),
+            // terrainProvider: Cesium.createWorldTerrain({
+            //     requestWaterMask: true,
+            //     requestVertexNormals: true,
+            // }),
 
             // 星空背景
             // skyBox : false,
@@ -267,7 +267,7 @@ export class B_Cesium {
         })
         this.viewer.baseLayerPicker.viewModel.imageryProviderViewModels.unshift(tianImage, tianVector, tianTerrain)
         this.viewer.baseLayerPicker.viewModel.selectedImagery = this.viewer.baseLayerPicker.viewModel.imageryProviderViewModels[0]
-        this.viewer.baseLayerPicker.viewModel.selectedTerrain = this.viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
+        // this.viewer.baseLayerPicker.viewModel.selectedTerrain = this.viewer.baseLayerPicker.viewModel.terrainProviderViewModels[1]
         this.measure = new B_Measure(this.viewer);
         this.camera = new B_Camera(this.viewer);
         this.dataSource = new B_DataSource(this.viewer);

@@ -6,21 +6,22 @@
   <el-tree :data="layer" @check-change="handleCheckChange" show-checkbox default-expand-all
            style="position: absolute;top: 90px;left: 0;"/>
   <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
-  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 220px;">贴地距离</el-button>
-  <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 323px;">贴地面积</el-button>
+  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 230px;">贴地距离</el-button>
+  <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 330px;">贴地面积</el-button>
   <el-button @click="measureProfile" style="position: absolute;top: 10px;left: 423px;">剖面测量</el-button>
   <el-button @click="measurePoint" style="position: absolute;top: 10px;left: 523px;">点位测量</el-button>
-  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 623px;">清除测量</el-button>
-  <el-button @click="drawer=true" style="position: absolute;top: 10px;left: 723px;">分析工具</el-button>
-  <el-button @click="drawerLayer=true" style="position: absolute;top: 10px;left: 823px;">要素图层</el-button>
-  <el-button @click="drawPoint" style="position: absolute;top: 50px;left: 120px;">绘制点</el-button>
-  <el-button @click="drawPolyline" style="position: absolute;top: 50px;left: 220px;">绘制线</el-button>
-  <el-button @click="drawPolylineGround" style="position: absolute;top: 50px;left: 320px;">绘制贴地线</el-button>
+  <el-button @click="guideCar" style="position: absolute;top: 10px;left: 623px;">路线导航</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 723px;">清除测量</el-button>
+  <el-button @click="drawPoint" style="position: absolute;top: 50px;left: 120px;width: 88px">绘制点</el-button>
+  <el-button @click="drawPolyline" style="position: absolute;top: 50px;left: 220px;width: 88px">绘制线</el-button>
+  <el-button @click="drawPolylineGround" style="position: absolute;top: 50px;left: 320px;width: 88px">绘制贴地线</el-button>
   <el-button @click="drawPolygon" style="position: absolute;top: 50px;left: 440px;">绘制面</el-button>
   <el-button @click="clearDraw" style="position: absolute;top: 50px;left: 530px;">清除绘制</el-button>
+  <el-button @click="drawerLayer=true" style="position: absolute;top: 50px;left: 628px;">要素图层</el-button>
   <el-button @click="flyTo(104.537499,31.871504,1000)" style="position: absolute;top: 100px;left: 170px;">黄家坝
   </el-button>
   <el-button @click="flyTo(114.35590,30.529938)" style="position: absolute;top: 100px;left: 250px;">武汉大学</el-button>
+  <el-button @click="drawer=true" style="position: absolute;top: 150px;left: 180px;">分析工具</el-button>
   <el-autocomplete v-model.trim="poiForm.keyWord" placeholder="地图检索" clearable input-style="width:220px"
                    :fetch-suggestions="suggestQuery" @select="handleSelect" :trigger-on-focus="false"
                    value-key="name" :highlight-first-item="true"
@@ -333,6 +334,10 @@ export default {
       require("../assets/无人机2.jpg")
     ]
 
+    const guideCar = () => {
+      b_Cesium.measure.guideCarTool()
+    }
+
     return {
       layer,
       handleCheckChange,
@@ -357,7 +362,8 @@ export default {
       url,
       srcList,
       screenPoint,
-      measurePoint
+      measurePoint,
+      guideCar
     }
   },
 

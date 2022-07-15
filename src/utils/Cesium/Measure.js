@@ -7,6 +7,8 @@ import pointsWithinPolygon from "@turf/points-within-polygon";
 import {ElNotification} from 'element-plus'
 import axios from "axios";
 import {B_Paint} from "@/utils/Cesium/Paint";
+import Utils from "@/utils/Cesium/Utils";
+
 
 export class B_Measure {
     constructor(viewer) {
@@ -14,12 +16,13 @@ export class B_Measure {
         this.entityCollection = []
         this.measureDataSource = new Cesium.CustomDataSource('measureData');
         this.measureCollection = this.measureDataSource.entities;
+        this.handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+        this.positions = []
         viewer.dataSources.add(this.measureDataSource);
     }
 
     clear(callback) {
-        const body = document.querySelector("body")
-        body.style.cursor = "default"
+        Utils.changeCursor("default")
         this.measureCollection.removeAll();
         this.entityCollection = [];
         // this.viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -28,7 +31,13 @@ export class B_Measure {
         if (callback) {
             callback()
         }
-    };
+    }
+
+    clearHandler() {
+        this.handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        this.handler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK)
+        this.handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+    }
 
     measureMovingPointTool(callback) {
         let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
@@ -349,9 +358,64 @@ export class B_Measure {
                     heights.push(positionCartographicArr[i].height)
                 }
                 callback({
-                    distances: distances,
-                    heights: heights
+                    distances: distances, heights: heights
                 })
+            })
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
+    }
+
+    guideCarTool() {
+        Utils.changeCursor("crosshair")
+        this.handler.setInputAction((event) => {
+            let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(event.position), this.viewer.scene)
+            if (!cartesian) {
+                return false;
+            }
+            this.measureCollection.add(B_Paint.paintPoint(cartesian, require("../../assets/cesium/点.png")))
+            this.positions.push(cartesian)
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        this.handler.setInputAction(() => {
+            Utils.changeCursor("default")
+            this.clearHandler()
+            this.positions = Utils.cartesian3ArrToCartographicArr(this.positions)
+            const length = this.positions.length
+            const guidePoi = {
+                orig: (this.positions[0].longitude / Math.PI * 180).toString() + "," + (this.positions[0].latitude / Math.PI * 180).toString(),
+                dest: (this.positions[length - 1].longitude / Math.PI * 180).toString() + "," + (this.positions[length - 1].latitude / Math.PI * 180).toString(),
+                style: "0"
+            }
+            if (length > 2) {
+                let mid = ""
+                for (let i = 1; i < length - 1; i++) {
+                    mid = mid + (this.positions[i].longitude / Math.PI * 180).toString() + "," + (this.positions[i].latitude / Math.PI * 180).toString()
+                }
+                guidePoi.mid = mid
+            }
+            B_Measure.guideCar(guidePoi).then((result) => {
+                this.positions = []
+                // console.log(result)
+                result.routelatlon.forEach((item) => {
+                    let lon = parseFloat(item.split(",")[0])
+                    let lat = parseFloat(item.split(",")[1])
+                    let cartesian = Cesium.Cartesian3.fromDegrees(lon, lat)
+                    this.positions.push(cartesian)
+                })
+                this.measureCollection.add(B_Paint.paintPolylineGround(this.positions))
+                result.routes.forEach((item) => {
+                    let cartesian = Cesium.Cartesian3.fromDegrees(parseFloat(item.lon), parseFloat(item.lat))
+                    this.measureCollection.add(
+                        B_Paint.paintPoint(cartesian, null,
+                            {
+                                路线指引: item.strguide,
+                                道路名称: item.streetName,
+                                下一段道路名称: item.nextStreetName,
+                                收费信息: item.tollStatus,
+                                路线全长: parseFloat(result.distance).toFixed(2) + "公里",
+                                行驶时间: (result.duration / 60).toFixed(2) + "分钟",
+                                路线信息: item.signage
+                            }))
+                })
+                this.positions = []
             })
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
@@ -366,12 +430,51 @@ export class B_Measure {
         poiForm.count = (poiForm.count || 100)
         // poiForm.dataTypes = (poiForm.dataTypes || "")
         // poiForm.show = (poiForm.show || "")
-        // console.log(JSON.stringify(poiForm))
-        return axios.get("https://api.tianditu.gov.cn/v2/search?postStr="
-            + JSON.stringify(poiForm) + "&type=query&tk=" + tiandituTK).then((res) => {
+        return axios.get("https://api.tianditu.gov.cn/v2/search?postStr=" + JSON.stringify(poiForm) + "&type=query&tk=" + tiandituTK).then((res) => {
             if (res.data.resultType === 1) {
                 return res.data.pois
             }
+        })
+    }
+
+    static guideCar(guidePoi) {
+        return axios.get("http://api.tianditu.gov.cn/drive?postStr=" + JSON.stringify(guidePoi) + "&type=search&tk=" + tiandituTK).then((res) => {
+            const domParser = new DOMParser();
+            const xml = domParser.parseFromString(res.data, 'text/xml')
+            const result = {routes: []}
+            // console.log(xml)
+
+            const routes = xml.getElementsByTagName('routes')[0]
+            const count = routes.getAttribute("count")
+            for (let i = 0; i < count; i++) {
+                let item = routes.getElementsByTagName("item")[i]
+                result.routes.push({})
+                result.routes[i].strguide = item.getElementsByTagName("strguide")[0].innerHTML
+                result.routes[i].signage = item.getElementsByTagName("signage")[0].innerHTML
+                result.routes[i].streetName = item.getElementsByTagName("streetName")[0].innerHTML
+                result.routes[i].nextStreetName = item.getElementsByTagName("nextStreetName")[0].innerHTML
+                result.routes[i].tollStatus = item.getElementsByTagName("tollStatus")[0].innerHTML
+                result.routes[i].tollStatus = (result.routes[i].tollStatus === "0") ? "免费路段" : "收费路段"
+                const turnlatlon = item.getElementsByTagName("turnlatlon")[0].innerHTML
+                const turnlatlonSplit = turnlatlon.split(",")
+                result.routes[i].lon = turnlatlonSplit[0]
+                result.routes[i].lat = turnlatlonSplit[1]
+            }
+
+            // 全长（公里）
+            const distance = xml.getElementsByTagName("distance")[0].innerHTML
+            result.distance = distance
+
+            // 行驶总时间（秒）
+            const duration = xml.getElementsByTagName("duration")[0].innerHTML
+            result.duration = duration
+
+            // 线路经纬度
+            const routelatlon = xml.getElementsByTagName('routelatlon')[0].innerHTML
+            result.routelatlon = routelatlon.split(";")
+            result.routelatlon.pop()
+
+            return result
         })
     }
 
@@ -549,7 +652,6 @@ export class B_Measure {
         return Promise.resolve(promise).then(function (updatedPositions) {
             // positions[0].height and positions[1].height have been updated.
             // updatedPositions is just a reference to positions.
-            // console.log(updatedPositions)
             let surfaceDistance = 0;
             for (let i = 0; i < updatedPositions.length; i++) {
                 if (i === updatedPositions.length - 1) continue;

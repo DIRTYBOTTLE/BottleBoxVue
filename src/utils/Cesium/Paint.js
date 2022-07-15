@@ -31,7 +31,6 @@ export class B_Paint {
             title: '操作提示', message: "左键开始，右键结束", type: 'info', position: 'top-left',
         })
         this._changeCursor(true)
-        // let handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
         this.handler.setInputAction((clickEvent) => {
             let cartesian = this.viewer.scene.globe.pick(this.viewer.camera.getPickRay(clickEvent.position), this.viewer.scene);
             if (!cartesian) {
@@ -155,8 +154,23 @@ export class B_Paint {
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
     }
 
-    static paintPoint(cartesian3, imgUrl) {
+    static paintPoint(cartesian3, imgUrl, descriptionPlus) {
         const cartographic = Cesium.Cartographic.fromCartesian(cartesian3)
+        let description = `${'<table class="cesium-infoBox-defaultTable"><tbody>' +
+            "<tr><th>经度</th><td>"}${cartographic.longitude / Math.PI * 180}</td></tr>` +
+            `<tr><th>纬度</th><td>${cartographic.latitude / Math.PI * 180}</td></tr>` +
+            `<tr><th>高程</th><td>${cartographic.height}</td></tr>` +
+            `</tbody></table>`
+        if (descriptionPlus) {
+            description = `${'<table class="cesium-infoBox-defaultTable"><tbody>' +
+                "<tr><th>经度</th><td>"}${cartographic.longitude / Math.PI * 180}</td></tr>` +
+                `<tr><th>纬度</th><td>${cartographic.latitude / Math.PI * 180}</td></tr>` +
+                `<tr><th>高程</th><td>${cartographic.height}</td></tr>`
+            for (name in descriptionPlus) {
+                description += `<tr><th>${name}</th><td>${descriptionPlus[name]}</td></tr>`
+            }
+            description += `</tbody></table>`
+        }
         if (!imgUrl) {
             return new Cesium.Entity({
                 name: '点',
@@ -166,12 +180,7 @@ export class B_Paint {
                     pixelSize: 8,
                     heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
                 },
-                description: `${'<table class="cesium-infoBox-defaultTable"><tbody>' +
-                    "<tr><th>经度</th><td>"}${cartographic.longitude / Math.PI * 180}</td></tr>` +
-                    `<tr><th>纬度</th><td>${cartographic.latitude / Math.PI * 180}</td></tr>` +
-                    `<tr><th>高程</th><td>${cartographic.height}</td></tr>` +
-                    `</tbody></table>`,
-
+                description: description,
             })
         }
         return new Cesium.Entity({
@@ -184,13 +193,8 @@ export class B_Paint {
                 heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
                 verticalOrigin: Cesium.VerticalOrigin.BOTTOM
             },
-            description: `${'<table class="cesium-infoBox-defaultTable"><tbody>' +
-                "<tr><th>经度</th><td>"}${cartographic.longitude / Math.PI * 180}</td></tr>` +
-                `<tr><th>纬度</th><td>${cartographic.latitude / Math.PI * 180}</td></tr>` +
-                `<tr><th>高程</th><td>${cartographic.height}</td></tr>` +
-                `</tbody></table>`,
+            description: description,
         })
-
     }
 
     static paintPolyline(cartesian3Arr) {

@@ -403,17 +403,15 @@ export class B_Measure {
                 this.measureCollection.add(B_Paint.paintPolylineGround(this.positions))
                 result.routes.forEach((item) => {
                     let cartesian = Cesium.Cartesian3.fromDegrees(parseFloat(item.lon), parseFloat(item.lat))
-                    this.measureCollection.add(
-                        B_Paint.paintPoint(cartesian, null,
-                            {
-                                路线指引: item.strguide,
-                                道路名称: item.streetName,
-                                下一段道路名称: item.nextStreetName,
-                                收费信息: item.tollStatus,
-                                路线全长: parseFloat(result.distance).toFixed(2) + "公里",
-                                行驶时间: (result.duration / 60).toFixed(2) + "分钟",
-                                路线信息: item.signage
-                            }))
+                    this.measureCollection.add(B_Paint.paintPoint(cartesian, null, {
+                        路线指引: item.strguide,
+                        道路名称: item.streetName,
+                        下一段道路名称: item.nextStreetName,
+                        收费信息: item.tollStatus,
+                        路线全长: parseFloat(result.distance).toFixed(2) + "公里",
+                        行驶时间: (result.duration / 60).toFixed(2) + "分钟",
+                        路线信息: item.signage
+                    }))
                 })
                 this.positions = []
             })
@@ -421,24 +419,24 @@ export class B_Measure {
     }
 
     static poiSearch(poiForm) {
-        poiForm.keyWord = (poiForm.keyWord || "")
-        poiForm.mapBound = (poiForm.mapBound || "0,0,180,90")
-        poiForm.level = (poiForm.level || 18)
-        // poiForm.specify = (poiForm.specify || "")
-        poiForm.queryType = (poiForm.queryType || 1)
-        poiForm.start = (poiForm.start || 0)
-        poiForm.count = (poiForm.count || 100)
-        // poiForm.dataTypes = (poiForm.dataTypes || "")
-        // poiForm.show = (poiForm.show || "")
         return axios.get("https://api.tianditu.gov.cn/v2/search?postStr=" + JSON.stringify(poiForm) + "&type=query&tk=" + tiandituTK).then((res) => {
             if (res.data.resultType === 1) {
                 return res.data.pois
+            }
+            if (res.data.resultType === 2) {
+                res.data.statistics.allAdmins.forEach((item) => {
+                    item.name = item.adminName
+                })
+                return res.data.statistics.allAdmins
+            }
+            if (res.data.resultType === 3) {
+                return [res.data.area]
             }
         })
     }
 
     static guideCar(guidePoi) {
-        return axios.get("http://api.tianditu.gov.cn/drive?postStr=" + JSON.stringify(guidePoi) + "&type=search&tk=" + tiandituTK).then((res) => {
+        return axios.get("https://api.tianditu.gov.cn/drive?postStr=" + JSON.stringify(guidePoi) + "&type=search&tk=" + tiandituTK).then((res) => {
             const domParser = new DOMParser();
             const xml = domParser.parseFromString(res.data, 'text/xml')
             const result = {routes: []}

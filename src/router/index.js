@@ -2,27 +2,27 @@ import {createRouter, createWebHistory} from 'vue-router'
 
 const routes = [{
     path: '/', component: () => import('../views/Login.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }, {
     path: '/home', component: () => import('../views/Home.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }, {
     path: '/cesium', component: () => import('../views/Cesium.vue')
 }, {
     path: '/file', component: () => import('../views/Doc.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }, {
     path: '/blog', component: () => import('../views/BlogList.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }, {
     path: '/blogedit', component: () => import('../views/BlogEdit.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }, {
     path: '/blogcontent', component: () => import('../views/BlogContent.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }, {
     path: '/gamestore', component: () => import('../views/GameStore.vue'),
-    // redirect:'/cesium'
+    redirect:'/cesium'
 }]
 
 const router = createRouter({

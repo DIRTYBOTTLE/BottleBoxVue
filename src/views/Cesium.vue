@@ -5,23 +5,46 @@
   </div>
   <el-tree :data="layer" @check-change="handleCheckChange" show-checkbox default-expand-all
            style="position: absolute;top: 90px;left: 0;"/>
-  <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>
-  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 230px;">贴地距离</el-button>
-  <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 330px;">贴地面积</el-button>
-  <el-button @click="measureProfile" style="position: absolute;top: 10px;left: 423px;">剖面测量</el-button>
-  <el-button @click="measurePoint" style="position: absolute;top: 10px;left: 523px;">点位测量</el-button>
-  <el-button @click="guideCar" style="position: absolute;top: 10px;left: 623px;">路线导航</el-button>
-  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 723px;">清除测量</el-button>
-  <el-button @click="drawPoint" style="position: absolute;top: 50px;left: 120px;width: 88px">绘制点</el-button>
-  <el-button @click="drawPolyline" style="position: absolute;top: 50px;left: 220px;width: 88px">绘制线</el-button>
-  <el-button @click="drawPolylineGround" style="position: absolute;top: 50px;left: 320px;width: 88px">绘制贴地线</el-button>
-  <el-button @click="drawPolygon" style="position: absolute;top: 50px;left: 440px;">绘制面</el-button>
-  <el-button @click="clearDraw" style="position: absolute;top: 50px;left: 530px;">清除绘制</el-button>
-  <el-button @click="drawerLayer=true" style="position: absolute;top: 50px;left: 628px;">要素图层</el-button>
-  <el-button @click="flyTo(104.537499,31.871504,1000)" style="position: absolute;top: 100px;left: 170px;">黄家坝
+<!--  <el-button @click="measureDistance" style="position: absolute;top: 10px;left: 130px;">欧氏距离</el-button>-->
+<!--  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 10px;left: 230px;">贴地距离</el-button>-->
+<!--  <el-button @click="measurePolygonToGround" style="position: absolute;top: 10px;left: 330px;">贴地面积</el-button>-->
+<!--  <el-button @click="measureProfile" style="position: absolute;top: 10px;left: 423px;">剖面测量</el-button>-->
+<!--  <el-button @click="measurePoint" style="position: absolute;top: 10px;left: 523px;">点位测量</el-button>-->
+<!--  <el-button @click="guideCar" style="position: absolute;top: 10px;left: 623px;">路线导航</el-button>-->
+<!--  <el-button @click="clearDistance" style="position: absolute;top: 10px;left: 723px;">清除测量</el-button>-->
+<!--  <el-button @click="drawPoint" style="position: absolute;top: 50px;left: 120px;width: 88px">绘制点</el-button>-->
+<!--  <el-button @click="drawPolyline" style="position: absolute;top: 50px;left: 220px;width: 88px">绘制线</el-button>-->
+<!--  <el-button @click="drawPolylineGround" style="position: absolute;top: 50px;left: 320px;width: 88px">绘制贴地线</el-button>-->
+<!--  <el-button @click="drawPolygon" style="position: absolute;top: 50px;left: 440px;">绘制面</el-button>-->
+<!--  <el-button @click="clearDraw" style="position: absolute;top: 50px;left: 530px;">清除绘制</el-button>-->
+<!--  <el-button @click="drawerLayer=true" style="position: absolute;top: 50px;left: 628px;">要素图层</el-button>-->
+<!--  <el-button @click="flyTo(104.537499,31.871504,1000)" style="position: absolute;top: 100px;left: 170px;">黄家坝-->
+<!--  </el-button>-->
+<!--  <el-button @click="flyTo(114.35590,30.529938)" style="position: absolute;top: 100px;left: 250px;">武汉大学</el-button>-->
+<!--  <el-button @click="drawer=true" style="position: absolute;top: 150px;left: 180px;">分析工具</el-button>-->
+  <el-button type="danger" style="position: absolute;top: 167px;right: 20px;">水源空间测量</el-button>
+  <el-button @click="measureDistance" style="position: absolute;top: 200px;right: 20px;">水源欧氏距离</el-button>
+  <el-button @click="measurePolyLineToGround" style="position: absolute;top: 233px;right: 20px;">水源贴地距离</el-button>
+  <el-button @click="measurePolygonToGround" style="position: absolute;top: 266px;right: 20px;">水体贴地面积</el-button>
+  <el-button @click="measureProfile" style="position: absolute;top: 299px;right: 20px;">地形剖面测量</el-button>
+  <el-button @click="measurePoint" style="position: absolute;top: 332px;right: 20px;">水源点位测量</el-button>
+  <el-button @click="guideCar" style="position: absolute;top: 365px;right: 20px;">水源路线导航</el-button>
+  <el-button @click="clearDistance" style="position: absolute;top: 398px;right: 20px;">清除水源测量</el-button>
+
+  <el-button type="danger" style="position: absolute;top: 167px;right: 150px;">水源空间绘制</el-button>
+  <el-button @click="drawPoint" style="position: absolute;top: 200px;right: 150px;">绘制水源点位</el-button>
+  <el-button @click="drawPolyline" style="position: absolute;top: 233px;right: 150px;">绘制水源线体</el-button>
+  <el-button @click="drawPolylineGround" style="position: absolute;top: 266px;right: 150px;">绘制贴地水流</el-button>
+  <el-button @click="drawPolygon" style="position: absolute;top: 299px;right: 150px;">绘制贴地水体</el-button>
+  <el-button @click="clearDraw" style="position: absolute;top: 332px;right: 150px;">清除水源绘制</el-button>
+  <el-button @click="drawerLayer=true" style="position: absolute;top: 365px;right: 150px;">水源要素图层</el-button>
+  <el-button @click="flyTo(104.537499,31.871504,1000)" style="position: absolute;top: 483px;right: 20px;">黄家坝示范区
   </el-button>
-  <el-button @click="flyTo(114.35590,30.529938)" style="position: absolute;top: 100px;left: 250px;">武汉大学</el-button>
-  <el-button @click="drawer=true" style="position: absolute;top: 150px;left: 180px;">分析工具</el-button>
+
+  <el-button type="danger" style="position: absolute;top: 450px;right: 20px;">水源示范区域</el-button>
+  <el-button @click="flyTo(114.35590,30.529938)" style="position: absolute;top: 516px;right: 20px;">武汉大学区域</el-button>
+  <el-button @click="drawer=true" style="position: absolute;top: 398px;right: 150px;">水源分析工具</el-button>
+
   <el-autocomplete v-model.trim="poiForm.keyWord" placeholder="地图检索" clearable input-style="width:220px"
                    :fetch-suggestions="suggestQuery" @select="handleSelect" :trigger-on-focus="false"
                    value-key="name" :highlight-first-item="true"
@@ -78,6 +101,7 @@ import {ref, nextTick} from "vue";
 import * as echarts from 'echarts';
 import {Search} from "@element-plus/icons-vue";
 import {B_Cesium} from "@/utils/Cesium/BottleCesium";
+import {ElNotification} from "element-plus";
 
 export default {
   name: "Cesium",
@@ -103,6 +127,19 @@ export default {
             category: 'water',
             name: 'surface',
             icon: require('../assets/地表水滴.png'),
+            show: false
+          },
+          {
+            label: '地质灾害',
+            category: 'water',
+            name: 'disaster',
+            icon: require('../assets/cesium/地质灾害.png'),
+            show: false
+          },
+          {
+            label: '水文地质',
+            category: 'water',
+            name: 'shuiwen',
             show: false
           },
         ],
@@ -305,7 +342,26 @@ export default {
       b_Cesium.paint.clear()
     }
 
-    const poiForm = ref({})
+    const poiForm = ref({
+      // 查询关键字
+      keyWord: "",
+      // 查询范围
+      mapBound: "0,0,180,90",
+      // 查询级别1-18
+      level: 18,
+      // 指定行政区域的9位国标码
+      // specify: "",
+      // 搜索类型 1普通搜索 7地名搜索
+      queryType: 1,
+      // 返回结果起始位
+      start: 0,
+      // 返回结果条数
+      count: 20,
+      // 数据分类（分类编码表）
+      // dataTypes:"",
+      // 返回poi结果级别 1基本poi 2 详细poi
+      show: 2
+    })
     const suggestQuery = (queryString, cb) => {
       B_Measure.poiSearch(poiForm.value).then((res) => {
         cb(res)
@@ -315,6 +371,36 @@ export default {
       const lon = parseFloat(item.lonlat.split(",")[0])
       const lat = parseFloat(item.lonlat.split(",")[1])
       b_Cesium.camera.flyToFromDegree(lon, lat)
+      let message = ""
+      message += (item.name ? "名称：" + item.name + "<br>" : "")
+      message += (item.phone ? "电话：" + item.phone + "<br>" : "")
+      message += (item.address ? "地址：" + item.address + "<br>" : "")
+      message += (item.lonlat ? "经度：" + item.lonlat.split(",")[0] + "<br>" : "")
+      message += (item.lonlat ? "纬度：" + item.lonlat.split(",")[1] + "<br>" : "")
+      message += (item.poiType ? (item.poiType === "101" ? "类型：POI数据<br>" : "类型：公交站点<br>") : "")
+      message += (item.eaddress ? "英文地址：" + item.eaddress + "<br>" : "")
+      message += (item.ename ? "英文名称：" + item.ename + "<br>" : "")
+      message += (item.hotPointID ? "热点id：" + item.hotPointID + "<br>" : "")
+      message += (item.province ? "省直属：" + item.province + "<br>" : "")
+      message += (item.provinceCode ? "省行政区编码：" + item.provinceCode + "<br>" : "")
+      message += (item.city ? "市直属：" + item.city + "<br>" : "")
+      message += (item.cityCode ? "市行政区编码：" + item.cityCode + "<br>" : "")
+      message += (item.county ? "区县直属：" + item.county + "<br>" : "")
+      message += (item.countyCode ? "区县行政区编码：" + item.countyCode + "<br>" : "")
+      message += (item.source ? "数据来源：" + item.source + "<br>" : "")
+      message += (item.typeCode ? "分类编码：" + item.typeCode + "<br>" : "")
+      message += (item.typeName ? "分类名称：" + item.typeName + "<br>" : "")
+      // message += (item.bound ? "范围：" + item.bound + "<br>" : "")
+      message += (item.adminCode ? "行政区编码：" + item.adminCode + "<br>" : "")
+      message += (item.level ? "显示级别：" + item.level + "<br>" : "")
+      message += (item.count ? "要素数量：" + item.count + "<br>" : "")
+
+
+
+
+      ElNotification({
+        title: '地点', message: message, type: 'info', position: 'top-left', duration: 0, dangerouslyUseHTMLString: true,
+      })
     }
 
     const measurePoint = () => {
